@@ -39,7 +39,8 @@ remotes::install_github(
 
 We start by simulating some data (here, 100 observations or RTs and MTs).
 
-```{r simulating}
+```{r simulating1}
+library(tidyverse)
 library(momimi)
 
 simulated_data <- model(
@@ -63,12 +64,12 @@ plot(x = simulated_data, method = "distributions")
 
 We can also use the model to generate realistic data from known parameter values and then fit the model to these data to try recover the original parameter values.
 
-```{r simulating2, eval = FALSE}
+```{r simulating2}
 # plausible "true" parameter values
 true_pars <- c(1.1, 0.5, 0.3, 1.25)
 
 # simulating data using these parameter values
-df <- model(
+simulated_data <- model(
     nsims = 200, nsamples = 2000,
     exec_threshold = true_pars[4] * true_pars[1],
     imag_threshold = 0.5 * true_pars[4] * true_pars[1],
@@ -90,13 +91,13 @@ df <- model(
     dplyr::select(-sim)
 
 # displaying the first ten rows of these data
-head(x = df, n = 10)
+head(x = simulated_data, n = 10)
 ```
 
-```{r fitting, eval = FALSE}
+```{r fitting}
 # fitting the model
 results <- fitting(
-    data = df,
+    data = simulated_data,
     nsims = 200,
     error_function = "g2",
     method = "DEoptim",

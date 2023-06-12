@@ -24,6 +24,7 @@ We start by simulating some data (here, 100 observations or RTs and
 MTs).
 
 ``` r
+library(tidyverse)
 library(momimi)
 
 simulated_data <- model(
@@ -61,7 +62,7 @@ original parameter values.
 true_pars <- c(1.1, 0.5, 0.3, 1.25)
 
 # simulating data using these parameter values
-df <- model(
+simulated_data <- model(
     nsims = 200, nsamples = 2000,
     exec_threshold = true_pars[4] * true_pars[1],
     imag_threshold = 0.5 * true_pars[4] * true_pars[1],
@@ -83,13 +84,24 @@ df <- model(
     dplyr::select(-sim)
 
 # displaying the first ten rows of these data
-head(x = df, n = 10)
+head(x = simulated_data, n = 10)
+#>    reaction_time movement_time action_mode
+#> 1      0.3712421     0.2942656    imagined
+#> 2      0.3806787     0.2684245    imagined
+#> 3      0.3715586     0.3110980    imagined
+#> 4      0.3671511     0.3004650    imagined
+#> 5      0.3724952     0.2979726    imagined
+#> 6      0.3663551     0.3092010    imagined
+#> 7      0.3721625     0.3078148    imagined
+#> 8      0.3818147     0.2841863    imagined
+#> 9      0.3673456     0.2945165    imagined
+#> 10     0.3736252     0.2936363    imagined
 ```
 
 ``` r
 # fitting the model
 results <- fitting(
-    data = df,
+    data = simulated_data,
     nsims = 200,
     error_function = "g2",
     method = "DEoptim",
@@ -101,7 +113,34 @@ results <- fitting(
     initial_pop_constraints = FALSE,
     maxit = 20
     )
+#> Iteration: 1 bestvalit: 2.484282 bestmemit:    0.397222    0.508942    0.250493    0.893974
+#> Iteration: 2 bestvalit: 1.932035 bestmemit:    1.657351    0.512966    0.156453    0.349366
+#> Iteration: 3 bestvalit: 1.932035 bestmemit:    1.657351    0.512966    0.156453    0.349366
+#> Iteration: 4 bestvalit: 1.932035 bestmemit:    1.657351    0.512966    0.156453    0.349366
+#> Iteration: 5 bestvalit: 1.470281 bestmemit:    1.975907    0.503800    0.149009    0.340395
+#> Iteration: 6 bestvalit: 1.470281 bestmemit:    1.975907    0.503800    0.149009    0.340395
+#> Iteration: 7 bestvalit: 1.470281 bestmemit:    1.975907    0.503800    0.149009    0.340395
+#> Iteration: 8 bestvalit: 0.900814 bestmemit:    0.386890    0.509362    0.162787    0.352842
+#> Iteration: 9 bestvalit: 0.900814 bestmemit:    0.386890    0.509362    0.162787    0.352842
+#> Iteration: 10 bestvalit: 0.900814 bestmemit:    0.386890    0.509362    0.162787    0.352842
+#> Iteration: 11 bestvalit: 0.900814 bestmemit:    0.386890    0.509362    0.162787    0.352842
+#> Iteration: 12 bestvalit: 0.900814 bestmemit:    0.386890    0.509362    0.162787    0.352842
+#> Iteration: 13 bestvalit: 0.617094 bestmemit:    0.987943    0.503503    0.175923    0.510871
+#> Iteration: 14 bestvalit: 0.328873 bestmemit:    0.653311    0.503199    0.244202    0.990749
+#> Iteration: 15 bestvalit: 0.328873 bestmemit:    0.653311    0.503199    0.244202    0.990749
+#> Iteration: 16 bestvalit: 0.328873 bestmemit:    0.653311    0.503199    0.244202    0.990749
+#> Iteration: 17 bestvalit: 0.328873 bestmemit:    0.653311    0.503199    0.244202    0.990749
+#> Iteration: 18 bestvalit: 0.328873 bestmemit:    0.653311    0.503199    0.244202    0.990749
+#> Iteration: 19 bestvalit: 0.270176 bestmemit:    0.584146    0.503199    0.244202    0.990749
+#> Iteration: 20 bestvalit: 0.270176 bestmemit:    0.584146    0.503199    0.244202    0.990749
 
 # fitting summary
 summary(results)
+#> 
+#> ***** summary of DEoptim object ***** 
+#> best member   :  0.58415 0.5032 0.2442 0.99075 
+#> best value    :  0.27018 
+#> after         :  20 generations 
+#> fn evaluated  :  4200 times 
+#> *************************************
 ```
