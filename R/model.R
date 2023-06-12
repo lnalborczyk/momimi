@@ -82,14 +82,14 @@ model <- function (
                     curvature = curvature_inhib
                     )
                 ) %>%
-            {if (model_version == "PIM") dplyr::mutate(., balance = activation / inhibition) else mutate(., balance = activation)} %>%
+            {if (model_version == "PIM") dplyr::mutate(., balance = activation / inhibition) else dplyr::mutate(., balance = activation)} %>%
             # numerically finding the balance's onset (RT) and offset
-            dplyr::mutate(onset_exec = which(balance > exec_threshold) %>% first() ) %>%
-            dplyr::mutate(offset_exec = which(balance > exec_threshold) %>% last() ) %>%
+            dplyr::mutate(onset_exec = which(balance > exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(balance > exec_threshold) %>% dplyr::last() ) %>%
             # MT is defined as offset minus onset
             dplyr::mutate(mt_exec = offset_exec - onset_exec) %>%
-            dplyr::mutate(onset_imag = which(balance > imag_threshold) %>% first() ) %>%
-            dplyr::mutate(offset_imag = which(balance > imag_threshold) %>% last() ) %>%
+            dplyr::mutate(onset_imag = which(balance > imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(balance > imag_threshold) %>% dplyr::last() ) %>%
             dplyr::mutate(mt_imag = offset_imag - onset_imag) %>%
             # convert from ms to seconds
             dplyr::mutate(across(onset_exec:mt_imag, ~ . / 1e3) ) %>%
@@ -308,7 +308,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
             ) +
         # plotting average
         ggplot2::stat_summary(
-            aes(group = name, colour = name),
+            ggplot2::aes(group = name, colour = name),
             fun = "median", geom = "line",
             colour = "black",
             linewidth = 1, alpha = 1,
@@ -335,7 +335,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
             ) %>%
         tidyr::pivot_longer(cols = c(onset_imag, mt_imag) ) %>%
         ggplot2::ggplot(
-            aes(
+            ggplot2::aes(
                 x = value, group = name,
                 colour = name, fill = name
                 )
@@ -348,15 +348,15 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
             ) +
         ggplot2::geom_label(
             data = . %>% dplyr::summarise(m = unique(imag_rt_median) ),
-            aes(x = m, y = 0, label = round(m, 3) ),
-            position = position_nudge(y = 0.01),
+            ggplot2::aes(x = m, y = 0, label = round(m, 3) ),
+            position = ggplot2::position_nudge(y = 0.01),
             size = 4,
             inherit.aes = FALSE
             ) +
         ggplot2::geom_label(
-            data = . %>% summarise(m = unique(imag_mt_median) ),
-            aes(x = m, y = 0, label = round(m, 3) ),
-            position = position_nudge(y = 0.01),
+            data = . %>% dplyr::summarise(m = unique(imag_mt_median) ),
+            ggplot2::aes(x = m, y = 0, label = round(m, 3) ),
+            position = ggplot2::position_nudge(y = 0.01),
             size = 4,
             inherit.aes = FALSE
             ) +

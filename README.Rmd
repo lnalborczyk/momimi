@@ -9,7 +9,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "75%",
+  dpi = 300,
+  message = FALSE
   )
 ```
 
@@ -25,8 +27,6 @@ The goal of `momimi` is to provide utilities for fitting two models of motor inh
 You can install the development version of `momimi` from GitHub with:
 
 ```{r installing, eval = FALSE}
-install.packages("remotes")
-
 remotes::install_github(
     repo = "https://github.com/lnalborczyk/momimi",
     dependencies = TRUE
@@ -38,7 +38,6 @@ remotes::install_github(
 We start by simulating some data (here, 100 observations or RTs and MTs).
 
 ```{r simulating}
-library(tidyverse)
 library(momimi)
 
 simulated_data <- model(
@@ -54,13 +53,10 @@ simulated_data <- model(
 We can plot the data...
 
 ```{r plotting}
-# plotting both the latent function(s) and the RTs/MTs distributions
-# plot(x = simulated_data, method = "both")
-
 # plotting only the latent function(s)
 plot(x = simulated_data, method = "functions")
 
-# plotting both the function(s) and the distributions of RTs/MTs distributions
+# plotting only the distributions of RTs/MTs distributions
 plot(x = simulated_data, method = "distributions")
 ```
 
