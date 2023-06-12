@@ -26,7 +26,7 @@ generating_initialpop <- function (
 
     # some tests for variable types
     stopifnot("nstudies must be a numeric..." = is.numeric(nstudies) )
-    stopifnot("action_mode must be a numeric..." = is.character(action_mode) )
+    stopifnot("action_mode must be a character..." = is.character(action_mode) )
 
     # initialising the result_nrow variable
     result_nrow <- 0

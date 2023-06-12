@@ -36,7 +36,7 @@ fitting <- function (
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
             "all_methods", "optimParallel"
             ),
-        maxit = 1e2
+        maxit = 100
         ) {
 
     # some tests for variable types
@@ -106,9 +106,6 @@ fitting <- function (
     } else if (method == "DEoptim") {
 
         if (initial_pop_constraints == TRUE) {
-
-            # function for generating plausible starting values
-            # source (file = paste0("utils/hypercube_sampling_while_", model_version, ".R") )
 
             # generating plausible starting values
             lhs_initial_pop <- generating_initialpop(
@@ -185,7 +182,6 @@ fitting <- function (
                 # using all available cores
                 parallelType = "parallel",
                 packages = c("DEoptim", "tidyverse", "lhs", "momimi")
-                # parVar = c("model", "loss_function")
                 )
             )
 
