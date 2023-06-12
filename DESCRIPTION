@@ -1,0 +1,32 @@
+Package: momimi
+Title: Models of Motor Inhibition during Motor Imagery
+Version: 0.0.0.9000
+Authors@R: 
+    person(
+    given = "Ladislas", family = "Nalborczyk",
+    role = c("aut", "cre"),
+    email = "ladislas.nalborczyk@gmail.com", 
+    comment = c(ORCID = "0000-0002-7419-9855")
+    )
+Description: Provides source code for the "threshold modulation model" (TMM)
+    and the "parallel inhibition model" (PIM) of motor inhibition during motor
+    imagery as well as fitting and plotting utilities.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports:
+    dplyr,
+    patchwork,
+    DEoptim,
+    GenSA,
+    hydroPSO,
+    optimParallel,
+    optimx,
+    pso,
+    parallel,
+    magrittr,
+    geomtextpath,
+    ggplot2,
+    tgp,
+    tidyr
