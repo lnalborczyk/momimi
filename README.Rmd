@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![Build Status](https://travis-ci.org/lnalborczyk/momimi.svg?branch=master)](https://travis-ci.org/lnalborczyk/momimi)
 [![GitHub repo size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
-[![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?style=for-the-badge)](https://github.com/lnalborczyk/momimi)
+[![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total&logo=github)](https://github.com/lnalborczyk/momimi)
 
 The `momimi` package implements the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides several fitting and plotting utilities.
     
