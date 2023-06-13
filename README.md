@@ -10,7 +10,7 @@ downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total&logo
 
 The `momimi` package implements the “threshold modulation model” (TMM)
 and the “parallel inhibition model” (PIM) of motor inhibition during
-motor imagery and provides several fitting and plotting utilities.
+motor imagery and provides fitting and plotting utilities.
 
 ## Installation
 
@@ -95,6 +95,9 @@ head(x = simulated_data, n = 10)
 #> 10     0.3736252     0.2936363    imagined
 ```
 
+We fit the model and use extra constraints on the initial parameter
+values to facilitate convergence (fitting can take a while).
+
 ``` r
 # fitting the model
 results <- fitting(
@@ -105,37 +108,20 @@ results <- fitting(
     model_version = "TMM",
     lower_bounds = c(0, 0.5, 0, 0),
     upper_bounds = c(2, 1.5, 1, 1),
-    maxit = 20
+    initial_pop_constraints = TRUE,
+    maxit = 50
     )
-#> Iteration: 1 bestvalit: 5.018594 bestmemit:    0.397222    0.508942    0.250493    0.893974
-#> Iteration: 2 bestvalit: 2.058790 bestmemit:    1.657351    0.512966    0.156453    0.349366
-#> Iteration: 3 bestvalit: 2.058790 bestmemit:    1.657351    0.512966    0.156453    0.349366
-#> Iteration: 4 bestvalit: 2.058790 bestmemit:    1.657351    0.512966    0.156453    0.349366
-#> Iteration: 5 bestvalit: 2.058790 bestmemit:    1.657351    0.512966    0.156453    0.349366
-#> Iteration: 6 bestvalit: 2.058790 bestmemit:    1.657351    0.512966    0.156453    0.349366
-#> Iteration: 7 bestvalit: 1.803986 bestmemit:    1.774202    0.512966    0.156453    0.349366
-#> Iteration: 8 bestvalit: 1.803986 bestmemit:    1.774202    0.512966    0.156453    0.349366
-#> Iteration: 9 bestvalit: 1.147558 bestmemit:    1.786694    0.508157    0.185663    0.492327
-#> Iteration: 10 bestvalit: 1.147558 bestmemit:    1.786694    0.508157    0.185663    0.492327
-#> Iteration: 11 bestvalit: 1.147558 bestmemit:    1.786694    0.508157    0.185663    0.492327
-#> Iteration: 12 bestvalit: 1.147558 bestmemit:    1.786694    0.508157    0.185663    0.492327
-#> Iteration: 13 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 14 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 15 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 16 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 17 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 18 bestvalit: 1.059186 bestmemit:    0.537468    0.505776    0.160763    0.314131
-#> Iteration: 19 bestvalit: 0.576788 bestmemit:    0.465189    0.507119    0.177217    0.455254
-#> Iteration: 20 bestvalit: 0.576788 bestmemit:    0.465189    0.507119    0.177217    0.455254
+```
 
+``` r
 # fitting summary
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  0.46519 0.50712 0.17722 0.45525 
-#> best value    :  0.57679 
-#> after         :  20 generations 
-#> fn evaluated  :  4200 times 
+#> best member   :  1.72914 0.50004 0.24893 0.99165 
+#> best value    :  0.02302 
+#> after         :  50 generations 
+#> fn evaluated  :  10455 times 
 #> *************************************
 ```
 

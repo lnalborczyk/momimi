@@ -19,9 +19,9 @@ knitr::opts_chunk$set(
 
 [![GitHub repo size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
-[![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total&logo=github)](https://github.com/lnalborczyk/momimi)
+[![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides several fitting and plotting utilities.
+The `momimi` package implements the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides fitting and plotting utilities.
     
 ## Installation
 
@@ -84,7 +84,9 @@ simulated_data <- simulating(
 head(x = simulated_data, n = 10)
 ```
 
-```{r fitting}
+We fit the model and use extra constraints on the initial parameter values to facilitate convergence (fitting can take a while).
+
+```{r fitting, results = "hide"}
 # fitting the model
 results <- fitting(
     data = simulated_data,
@@ -94,9 +96,12 @@ results <- fitting(
     model_version = "TMM",
     lower_bounds = c(0, 0.5, 0, 0),
     upper_bounds = c(2, 1.5, 1, 1),
-    maxit = 20
+    initial_pop_constraints = TRUE,
+    maxit = 50
     )
+```
 
+```{r fitting-summary}
 # fitting summary
 summary(results)
 ```

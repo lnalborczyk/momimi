@@ -13,6 +13,21 @@
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #'
+#' @examples
+#' \dontrun{
+#' # plausible "true" parameter values in the TMM
+#' true_pars <- c(1.1, 0.5, 0.3, 1.25)
+#'
+#' # simulating data using these parameter values
+#' simulated_data <- simulating(
+#'     nsims = 200,
+#'     nsamples = 2000,
+#'     true_pars = true_pars,
+#'     action_mode = "imagined",
+#'     model_version = "TMM"
+#'     )
+#' }
+#'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
 #'
 #' @export

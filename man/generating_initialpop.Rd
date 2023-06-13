@@ -11,6 +11,8 @@ generating_initialpop(
   lower_bounds,
   upper_bounds,
   model_version = c("TMM", "PIM"),
+  rt_contraints = c(0.1, 2),
+  mt_contraints = c(0.1, 2),
   verbose = TRUE
 )
 }
@@ -26,6 +28,10 @@ generating_initialpop(
 \item{upper_bounds}{Numeric, vector of upper bounds for parameters.}
 
 \item{model_version}{Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").}
+
+\item{rt_contraints}{Numeric, vector of length 2 specifying the min and max RT (in seconds).}
+
+\item{mt_contraints}{Numeric, vector of length 2 specifying the min and max MT (in seconds).}
 
 \item{verbose}{Boolean, whether to print progress during fitting.}
 }
