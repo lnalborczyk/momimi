@@ -7,9 +7,9 @@
 quantiles_props(x, quants)
 }
 \arguments{
-\item{x}{Numeric, number of starting values in the LHS.}
+\item{x}{Numeric, vector of observations (RTs or MTs)}
 
-\item{quants}{Character, action mode (executed or imagined).}
+\item{quants}{Numeric, vector of quantiles bounds}
 }
 \value{
 Vector of proportions per quantile.

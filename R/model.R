@@ -15,14 +15,16 @@
 #' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
 #' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
 #'
-#' @return A dataframe
+#' @return A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 #'
 #' @importFrom stats rnorm median
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #'
 #' @examples
 #' \dontrun{
-#' simulation_results <- model(
+#' # simulating 100 observations
+#' simulated_data <- model(
 #'     nsims = 100, nsamples = 2000,
 #'     exec_threshold = 1, imag_threshold = 0.5,
 #'     amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
@@ -30,6 +32,9 @@
 #'     model_version = "PIM",
 #'     full_output = FALSE
 #'     )
+#'
+#' # displaying the first six observations
+#' head(simulated_data)
 #' }
 #'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
@@ -65,10 +70,10 @@ model <- function (
             exec_threshold = exec_threshold,
             imag_threshold = imag_threshold
             ) %>%
-            dplyr::group_by(sim) %>%
+            dplyr::group_by(.data$sim) %>%
             dplyr::mutate(
                 activation = activation(
-                    time = time,
+                    time = .data$time,
                     amplitude = amplitude_activ,
                     peak_time = peak_time_activ,
                     curvature = curvature_activ
@@ -76,23 +81,23 @@ model <- function (
                 ) %>%
             dplyr::mutate(
                 inhibition = activation(
-                    time = time,
+                    time = .data$time,
                     amplitude = amplitude_inhib,
                     peak_time = peak_time_inhib,
                     curvature = curvature_inhib
                     )
                 ) %>%
-            {if (model_version == "PIM") dplyr::mutate(., balance = activation / inhibition) else dplyr::mutate(., balance = activation)} %>%
+            {if (model_version == "PIM") dplyr::mutate(., balance = .data$activation / .data$inhibition) else dplyr::mutate(., balance = .data$activation)} %>%
             # numerically finding the balance's onset (RT) and offset
-            dplyr::mutate(onset_exec = which(balance > exec_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_exec = which(balance > exec_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_exec = which(.data$balance > .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$balance > .data$exec_threshold) %>% dplyr::last() ) %>%
             # MT is defined as offset minus onset
-            dplyr::mutate(mt_exec = offset_exec - onset_exec) %>%
-            dplyr::mutate(onset_imag = which(balance > imag_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_imag = which(balance > imag_threshold) %>% dplyr::last() ) %>%
-            dplyr::mutate(mt_imag = offset_imag - onset_imag) %>%
+            dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
+            dplyr::mutate(onset_imag = which(.data$balance > .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$balance > .data$imag_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
             # convert from ms to seconds
-            dplyr::mutate(across(onset_exec:mt_imag, ~ . / 1e3) ) %>%
+            dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . / 1e3) ) %>%
             dplyr::ungroup()
 
         # setting the class of the resulting object
@@ -101,16 +106,6 @@ model <- function (
     } else if (full_output == FALSE) {
 
         if (model_version == "TMM") {
-
-            # defining a function to compute the predicted RT and MT (quadratic formula)
-            # onset_offset <- function (alpha, mu, sigma, thresh) {
-            #
-            #     onset <-  exp(mu - sqrt(-2 * sigma^2 * log(thresh / alpha) ) )
-            #     offset <- exp(mu + sqrt(-2 * sigma^2 * log(thresh / alpha) ) )
-            #
-            #     return (c(onset, offset) )
-            #
-            # }
 
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (exec_threshold = 1,
@@ -121,10 +116,10 @@ model <- function (
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_sim <- rnorm(n = 1, mean = amplitude, sd = 0.01)
-                peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = 0.01)
-                curvature_sim <- rnorm(n = 1, mean = curvature, sd = 0.01)
-                exec_threshold_sim <- rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+                amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
+                peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
+                curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
+                exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
 
                 # # no variability in the motor imagery threshold
                 # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
@@ -166,19 +161,19 @@ model <- function (
                 exec_threshold = exec_threshold,
                 imag_threshold = imag_threshold
                 ) %>%
-                dplyr::group_by(sim) %>%
+                dplyr::group_by(.data$sim) %>%
                 dplyr::do(
                     suppressWarnings(
                         activation_function(
                             amplitude = amplitude_activ,
                             peak_time = peak_time_activ,
                             curvature = curvature_activ,
-                            exec_threshold = exec_threshold,
-                            imag_threshold = imag_threshold
+                            exec_threshold = .data$exec_threshold,
+                            imag_threshold = .data$imag_threshold
                             )
                         )
                     ) %>%
-                ungroup()
+                dplyr::ungroup()
 
         } else if (model_version == "PIM") {
 
@@ -192,13 +187,13 @@ model <- function (
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_activ_sim <- rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
-                peak_time_activ_sim <- rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
-                curvature_activ_sim <- rnorm(n = 1, mean = curvature_activ, sd = 0.01)
+                amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
+                peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
+                curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = 0.01)
 
-                amplitude_inhib_sim <- rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
-                peak_time_inhib_sim <- rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
-                curvature_inhib_sim <- rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
+                amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
+                peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
+                curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
 
                 # computing the predicted RT and MT in imagery
                 onset_offset_imag <- onset_offset(
@@ -242,7 +237,7 @@ model <- function (
                 exec_threshold = exec_threshold,
                 imag_threshold = imag_threshold
                 ) %>%
-                dplyr::group_by(sim) %>%
+                dplyr::group_by(.data$sim) %>%
                 dplyr::do(
                     suppressWarnings(
                         balance_function(
@@ -252,8 +247,8 @@ model <- function (
                             amplitude_inhib = amplitude_inhib,
                             peak_time_inhib = peak_time_inhib,
                             curvature_inhib = curvature_inhib,
-                            exec_threshold = exec_threshold,
-                            imag_threshold = imag_threshold
+                            exec_threshold = .data$exec_threshold,
+                            imag_threshold = .data$imag_threshold
                             )
                         )
                     ) %>%
@@ -281,12 +276,12 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
     # plotting the functions
     p1 <- x %>%
         # pivot_longer(cols = activation:balance) %>%
-        tidyr::pivot_longer(cols = activation) %>%
+        tidyr::pivot_longer(cols = .data$activation) %>%
         ggplot2::ggplot(
             ggplot2::aes(
-                x = time, y = value,
-                group = interaction(sim, name),
-                colour = name
+                x = .data$time, y = .data$value,
+                group = interaction(.data$sim, .data$name),
+                colour = .data$name
                 )
             ) +
         # plotting the motor execution and motor imagery thresholds
@@ -302,13 +297,14 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
             ) +
         # plotting some individual simulations
         ggplot2::geom_line(
-            data = . %>% dplyr::filter(sim %in% unique(sim)[1:50]),
+            data = . %>% dplyr::filter(.data$sim %in% unique(.data$sim)[1:50]),
+            # data = dplyr::filter(.data$sim %in% unique(.data$sim)[1:50]),
             linewidth = 0.5, alpha = 0.5, colour = "grey",
             show.legend = FALSE
             ) +
         # plotting average
         ggplot2::stat_summary(
-            ggplot2::aes(group = name, colour = name),
+            ggplot2::aes(group = .data$name, colour = .data$name),
             fun = "median", geom = "line",
             colour = "black",
             linewidth = 1, alpha = 1,
@@ -328,16 +324,16 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
 
     p2 <- x %>%
         dplyr::mutate(
-            exec_rt_median = stats::median(onset_exec),
-            imag_rt_median = stats::median(onset_imag),
-            exec_mt_median = stats::median(mt_exec),
-            imag_mt_median = stats::median(mt_imag),
+            exec_rt_median = stats::median(.data$onset_exec),
+            imag_rt_median = stats::median(.data$onset_imag),
+            exec_mt_median = stats::median(.data$mt_exec),
+            imag_mt_median = stats::median(.data$mt_imag),
             ) %>%
-        tidyr::pivot_longer(cols = c(onset_imag, mt_imag) ) %>%
+        tidyr::pivot_longer(cols = c(.data$onset_imag, .data$mt_imag) ) %>%
         ggplot2::ggplot(
             ggplot2::aes(
-                x = value, group = name,
-                colour = name, fill = name
+                x = .data$value, group = .data$name,
+                colour = .data$name, fill = .data$name
                 )
             ) +
         ggplot2::geom_density(
@@ -347,15 +343,17 @@ plot.momimi_full <- function (x, method = c("functions", "distributions", "both"
             show.legend = FALSE
             ) +
         ggplot2::geom_label(
-            data = . %>% dplyr::summarise(m = unique(imag_rt_median) ),
-            ggplot2::aes(x = m, y = 0, label = round(m, 3) ),
+            data = . %>% dplyr::summarise(m = unique(.data$imag_rt_median) ),
+            # data = dplyr::summarise(m = unique(.data$imag_rt_median) ),
+            ggplot2::aes(x = .data$m, y = 0, label = round(.data$m, 3) ),
             position = ggplot2::position_nudge(y = 0.01),
             size = 4,
             inherit.aes = FALSE
             ) +
         ggplot2::geom_label(
-            data = . %>% dplyr::summarise(m = unique(imag_mt_median) ),
-            ggplot2::aes(x = m, y = 0, label = round(m, 3) ),
+            data = . %>% dplyr::summarise(m = unique(.data$imag_mt_median) ),
+            # data = dplyr::summarise(m = unique(.data$imag_mt_median) ),
+            ggplot2::aes(x = .data$m, y = 0, label = round(.data$m, 3) ),
             position = ggplot2::position_nudge(y = 0.01),
             size = 4,
             inherit.aes = FALSE

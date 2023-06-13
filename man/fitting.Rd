@@ -49,7 +49,7 @@ fitting(
 The optimised parameter values and further convergence informatio
 }
 \description{
-Fitting the two versions of the model.
+Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
 }
 \author{
 Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com}.

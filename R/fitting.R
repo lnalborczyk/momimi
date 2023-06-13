@@ -1,6 +1,6 @@
 #' Fitting the model
 #'
-#' Fitting the two versions of the model.
+#' Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
 #'
 #' @param par Numeric, vector of parameter values.
 #' @param data Dataframe, data to be used for fitting the model.
@@ -44,8 +44,16 @@ fitting <- function (
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nstudies must be a numeric..." = is.numeric(nstudies) )
 
+    # testing whether only 4 pars have been specified
+    stopifnot("par_names must be a numeric of length 4..." = length(par_names) == 4)
+    stopifnot("lower_bounds must be a numeric of length 4..." = length(lower_bounds) == 4)
+    stopifnot("upper_bounds must be a numeric of length 4..." = length(upper_bounds) == 4)
+
     # method should be one of above
     method <- match.arg(method)
+
+    # model_version should be one of above
+    model_version <- match.arg(model_version)
 
     if (method == "SANN") {
 
@@ -184,6 +192,9 @@ fitting <- function (
                 packages = c("DEoptim", "tidyverse", "lhs", "momimi")
                 )
             )
+
+        # setting the class of the resulting object
+        class(fitt) <- c("DEoptim_momimi", "DEoptim", "data.frame")
 
     } else if (method %in% c("Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb") ) {
 

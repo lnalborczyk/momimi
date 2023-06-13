@@ -33,7 +33,7 @@ loss(
 \item{error_function}{Character, loss function to be used when fitting the model.}
 }
 \value{
-A dataframe
+The loss/error for a given set of observations.
 }
 \description{
 Provides possible loss functions for the two versions of the model.

@@ -11,8 +11,9 @@
 #' @param imag_threshold motor imagery threshold.
 #' @param error_function Character, loss function to be used when fitting the model.
 #'
-#' @return A dataframe
+#' @return The loss/error for a given set of observations.
 #'
+#' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
@@ -168,15 +169,15 @@ loss <- function (
             exec_threshold = exec_threshold,
             imag_threshold = imag_threshold
             ) %>%
-            dplyr::group_by(sim) %>%
+            dplyr::group_by(.data$sim) %>%
             dplyr::do(
                 suppressWarnings(
                     activation_function(
-                        amplitude = amplitude_activ,
-                        peak_time = peak_time_activ,
-                        curvature = curvature_activ,
-                        exec_threshold = exec_threshold,
-                        imag_threshold = imag_threshold
+                        amplitude = .data$amplitude_activ,
+                        peak_time = .data$peak_time_activ,
+                        curvature = .data$curvature_activ,
+                        exec_threshold = .data$exec_threshold,
+                        imag_threshold = .data$imag_threshold
                         )
                     )
                 ) %>%
@@ -344,22 +345,22 @@ loss <- function (
             sim = rep(1:nsims, each = nsamples),
             exec_threshold = exec_threshold,
             imag_threshold = imag_threshold
-            ) |>
-            dplyr::group_by(sim) |>
+            ) %>%
+            dplyr::group_by(.data$sim) %>%
             dplyr::do(
                 suppressWarnings(
                     balance_function(
-                        exec_threshold = exec_threshold,
-                        imag_threshold = imag_threshold,
-                        amplitude_activ = amplitude_activ,
-                        peak_time_activ = peak_time_activ,
-                        curvature_activ = curvature_activ,
-                        amplitude_inhib = amplitude_inhib,
-                        peak_time_inhib = peak_time_inhib,
-                        curvature_inhib = curvature_inhib
+                        exec_threshold = .data$exec_threshold,
+                        imag_threshold = .data$imag_threshold,
+                        amplitude_activ = .data$amplitude_activ,
+                        peak_time_activ = .data$peak_time_activ,
+                        curvature_activ = .data$curvature_activ,
+                        amplitude_inhib = .data$amplitude_inhib,
+                        peak_time_inhib = .data$peak_time_inhib,
+                        curvature_inhib = .data$curvature_inhib
                         )
                     )
-                ) |>
+                ) %>%
             dplyr::ungroup()
 
     }
@@ -368,18 +369,18 @@ loss <- function (
     if (unique(data$action_mode) == "imagined") {
 
         # retrieving distribution of simulated RTs
-        predicted_rt <- replace_na(data = results$onset_imag, replace = 1e6)
+        predicted_rt <- tidyr::replace_na(data = results$onset_imag, replace = 1e6)
 
         # retrieving distribution of simulated MTs
-        predicted_mt <- replace_na(data = results$mt_imag, replace = 1e6)
+        predicted_mt <- tidyr::replace_na(data = results$mt_imag, replace = 1e6)
 
     } else if (unique(data$action_mode) == "executed") {
 
         # retrieving distribution of simulated RTs
-        predicted_rt <- replace_na(data = results$onset_exec, replace = 1e6)
+        predicted_rt <- tidyr::replace_na(data = results$onset_exec, replace = 1e6)
 
         # retrieving distribution of simulated MTs
-        predicted_mt <- replace_na(data = results$mt_exec, replace = 1e6)
+        predicted_mt <- tidyr::replace_na(data = results$mt_exec, replace = 1e6)
 
     } else {
 
@@ -475,10 +476,10 @@ loss <- function (
     } else if (error_function == "wsse") {
 
         # or weighted SSE as in Ratcliff & Smith (2004)
-        observed_rt_quantiles <- quantile(x = data$reaction_time, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
-        observed_mt_quantiles <- quantile(x = data$movement_time, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
-        predicted_rt_quantiles <- quantile(x = predicted_rt, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
-        predicted_mt_quantiles <- quantile(x = predicted_mt, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
+        observed_rt_quantiles <- stats::quantile(x = data$reaction_time, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
+        observed_mt_quantiles <- stats::quantile(x = data$movement_time, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
+        predicted_rt_quantiles <- stats::quantile(x = predicted_rt, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
+        predicted_mt_quantiles <- stats::quantile(x = predicted_mt, probs = c(0.1, 0.3, 0.5, 0.7, 0.9), na.rm = TRUE)
 
         # quantile weights (cf. Ratcliff & Smith, 2004)
         quantile_weights <- c(2, 2, 1, 1, 0.5)
@@ -490,8 +491,8 @@ loss <- function (
     } else if (error_function == "ks") {
 
         # computes the KS statistic
-        prediction_error <- as.numeric(ks.test(x = predicted_rt, y = data$reaction_time)$statistic) +
-            as.numeric(ks.test(x = predicted_mt, y = data$movement_time)$statistic)
+        prediction_error <- as.numeric(stats::ks.test(x = predicted_rt, y = data$reaction_time)$statistic) +
+            as.numeric(stats::ks.test(x = predicted_mt, y = data$movement_time)$statistic)
 
     }
 

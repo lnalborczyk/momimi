@@ -1,6 +1,6 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: 
     person(
     given = "Ladislas", family = "Nalborczyk",
@@ -17,16 +17,18 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
     dplyr,
-    patchwork,
     DEoptim,
     GenSA,
     hydroPSO,
     optimParallel,
     optimx,
+    magrittr,
     pso,
     parallel,
-    magrittr,
+    rlang,
     geomtextpath,
     ggplot2,
     tgp,
     tidyr
+Suggests: 
+    patchwork

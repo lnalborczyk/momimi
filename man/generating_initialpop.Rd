@@ -27,7 +27,7 @@ generating_initialpop(
 \item{model_version}{Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").}
 }
 \value{
-...
+Returns a dataframe a plausible (according to custom constraints) initial parameter values.
 }
 \description{
 Generating plausible initial parameter values for DEoptim based on empirical constraints.

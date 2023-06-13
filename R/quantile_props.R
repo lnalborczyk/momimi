@@ -2,8 +2,8 @@
 #'
 #' Computes the proportion of observations within quantiles
 #'
-#' @param x Numeric, number of starting values in the LHS.
-#' @param quants Character, action mode (executed or imagined).
+#' @param x Numeric, vector of observations (RTs or MTs)
+#' @param quants Numeric, vector of quantiles bounds
 #'
 #' @return Vector of proportions per quantile.
 #'

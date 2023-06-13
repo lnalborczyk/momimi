@@ -45,14 +45,15 @@ model(
 \item{full_output}{Boolean, indicating whether activ/inhib curves should be returned.}
 }
 \value{
-A dataframe
+A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 }
 \description{
 Sampling from the two versions of the model.
 }
 \examples{
 \dontrun{
-simulation_results <- model(
+# simulating 100 observations
+simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
     amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
@@ -60,6 +61,9 @@ simulation_results <- model(
     model_version = "PIM",
     full_output = FALSE
     )
+
+# displaying the first six observations
+head(simulated_data)
 }
 
 }

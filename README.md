@@ -1,24 +1,31 @@
 
-# Models of Motor Inhibition during Motor Imagery (momimi)
+# Models of Motor Inhibition during Motor Imagery
 
-<!-- badges: start -->
-<!-- badges: end -->
+[![Build
+Status](https://travis-ci.org/lnalborczyk/momimi.svg?branch=master)](https://travis-ci.org/lnalborczyk/momimi)
+[![GitHub repo
+size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
+[![GitHub last
+update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
+[![GitHub
+downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?style=for-the-badge)](https://github.com/lnalborczyk/momimi)
 
-The goal of `momimi` is to provide utilities for fitting two models of
-motor inhibition during motor imagery.
+The `momimi` package implements the “threshold modulation model” (TMM)
+and the “parallel inhibition model” (PIM) of motor inhibition during
+motor imagery and provides several fitting and plotting utilities.
 
 ## Installation
 
-You can install the development version of `momimi` from GitHub with:
+You can install the development version from GitHub with:
 
 ``` r
-remotes::install_github(
-    repo = "https://github.com/lnalborczyk/momimi",
-    dependencies = TRUE
-    )
+# install.packages("devtools")
+devtools::install_github(repo = "lnalborczyk/momimi", build_vignettes = TRUE)
 ```
 
 ## Usage
+
+### Simulating and plotting data
 
 We start by simulating some data (here, 100 observations or RTs and
 MTs).
@@ -36,7 +43,8 @@ simulated_data <- model(
     )
 ```
 
-We can plot the data…
+We can plot the underlying activation function and the implied
+distributions of RTs and MTs.
 
 ``` r
 # plotting only the latent function(s)
@@ -53,9 +61,11 @@ plot(x = simulated_data, method = "distributions")
 
 <img src="man/figures/README-plotting-2.png" width="75%" />
 
+### Fitting the models
+
 We can also use the model to generate realistic data from known
-parameter values and then fit the model to these data to try recover the
-original parameter values.
+parameter values and then fit the model to these data to try recovering
+the original parameter values.
 
 ``` r
 # plausible "true" parameter values
@@ -144,3 +154,15 @@ summary(results)
 #> fn evaluated  :  4200 times 
 #> *************************************
 ```
+
+## References
+
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X.
+(*to be submitted*). Towards formal models of inhibitory mechanisms
+involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022).
+
+## Getting help
+
+If you encounter a bug or have a question please file an issue with a
+minimal reproducible example on
+[GitHub](https://github.com/lnalborczyk/momimi/issues).

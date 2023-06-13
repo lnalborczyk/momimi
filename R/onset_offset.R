@@ -23,9 +23,12 @@ onset_offset <- function (
         thresh, model_version = c("TMM", "PIM")
         ) {
 
+    # model_version should be one of above
+    model_version <- match.arg(model_version)
+
     if (model_version == "TMM") {
 
-        onset <-  exp(peak_time_activ - sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
+        onset <- exp(peak_time_activ - sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
         offset <- exp(peak_time_activ + sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
 
         return (c(onset, offset) )
