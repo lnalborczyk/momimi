@@ -6,7 +6,7 @@ size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgre
 [![GitHub last
 update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub
-downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total&logo=github)](https://github.com/lnalborczyk/momimi)
+downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
 The `momimi` package implements the “threshold modulation model” (TMM)
 and the “parallel inhibition model” (PIM) of motor inhibition during
