@@ -9,7 +9,7 @@ loss(
   data,
   nsims = NULL,
   nsamples = 3000,
-  model_version = "TMM",
+  model_version = c("TMM", "PIM"),
   exec_threshold = 1,
   imag_threshold = 0.5,
   error_function = c("g2", "rmse", "sse", "wsse", "ks")

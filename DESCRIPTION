@@ -28,11 +28,11 @@ Imports:
     rlang,
     geomtextpath,
     ggplot2,
+    stringr,
     tgp,
     tidyr
 Suggests: 
     knitr,
-    patchwork,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

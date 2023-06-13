@@ -8,6 +8,7 @@
 #' @param lower_bounds Numeric, vector of lower bounds for parameters.
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
 #' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
+#' @param verbose Boolean, whether to print progress during fitting.
 #'
 #' @return Returns a dataframe a plausible (according to custom constraints) initial parameter values.
 #'
@@ -22,7 +23,7 @@
 generating_initialpop <- function (
         nstudies, action_mode,
         par_names, lower_bounds, upper_bounds,
-        model_version = c("TMM", "PIM")
+        model_version = c("TMM", "PIM"), verbose = TRUE
         ) {
 
     # some tests for variable types
@@ -55,6 +56,16 @@ generating_initialpop <- function (
 
         # setting columns names
         colnames(lhs_pars) <- par_names
+
+        if (model_version == "TMM") {
+
+
+
+        } else if (model_version == "PIM") {
+
+
+
+        }
 
         # defining the balance function
         # basically a ratio of two rescaled lognormal functions
@@ -121,9 +132,9 @@ generating_initialpop <- function (
                         amplitude_inhib = 1.5 / .data$amplitude_ratio,
                         peak_time_inhib = log(.data$peak_time),
                         curvature_inhib = .data$curvature_inhib * .data$curvature_activ
+                        )
                     )
                 )
-            )
 
         if (action_mode == "imagined") {
 
@@ -178,11 +189,15 @@ generating_initialpop <- function (
 
         }
 
-        # updating the result_nrow variable
-        result_nrow <- nrow(lhs_initial_pop)
+        if (verbose) {
 
-        # printing progress
-        print(result_nrow)
+            # updating the result_nrow variable
+            result_nrow <- nrow(lhs_initial_pop)
+
+            # printing progress
+            print(result_nrow)
+
+        }
 
     }
 

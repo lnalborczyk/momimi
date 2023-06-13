@@ -10,7 +10,8 @@ generating_initialpop(
   par_names,
   lower_bounds,
   upper_bounds,
-  model_version = c("TMM", "PIM")
+  model_version = c("TMM", "PIM"),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ generating_initialpop(
 \item{upper_bounds}{Numeric, vector of upper bounds for parameters.}
 
 \item{model_version}{Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").}
+
+\item{verbose}{Boolean, whether to print progress during fitting.}
 }
 \value{
 Returns a dataframe a plausible (according to custom constraints) initial parameter values.

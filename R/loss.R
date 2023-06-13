@@ -25,7 +25,7 @@ loss <- function (
         par, data,
         nsims = NULL,
         nsamples = 3000,
-        model_version = "TMM",
+        model_version = c("TMM", "PIM"),
         exec_threshold = 1, imag_threshold = 0.5,
         error_function = c("g2", "rmse", "sse", "wsse", "ks")
         ) {
@@ -34,6 +34,9 @@ loss <- function (
     stopifnot("data must be a dataframe..." = is.data.frame(data) )
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
+
+    # model_version should be one of above
+    model_version <- match.arg(model_version)
 
     # error_function should be one of above
     error_function <- match.arg(error_function)
@@ -75,10 +78,10 @@ loss <- function (
 
             # adding some variability in the other parameters
             # variability is currently fixed but could also be estimated
-            amplitude_sim <- rnorm(n = 1, mean = amplitude, sd = 0.01)
-            peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = 0.01)
-            curvature_sim <- rnorm(n = 1, mean = curvature, sd = 0.01)
-            exec_threshold_sim <- rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+            amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
+            peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
+            curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
+            exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
 
             # no variability in the motor imagery threshold
             # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
@@ -173,9 +176,9 @@ loss <- function (
             dplyr::do(
                 suppressWarnings(
                     activation_function(
-                        amplitude = .data$amplitude_activ,
-                        peak_time = .data$peak_time_activ,
-                        curvature = .data$curvature_activ,
+                        amplitude = amplitude_activ,
+                        peak_time = peak_time_activ,
+                        curvature = curvature_activ,
                         exec_threshold = .data$exec_threshold,
                         imag_threshold = .data$imag_threshold
                         )
@@ -223,13 +226,13 @@ loss <- function (
 
             # adding some variability in the other parameters
             # variability is currently fixed but could also be estimated
-            amplitude_activ_sim <- rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
-            peak_time_activ_sim <- rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
-            curvature_activ_sim <- rnorm(n = 1, mean = curvature_activ, sd = 0.01)
+            amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
+            peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
+            curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = 0.01)
 
-            amplitude_inhib_sim <- rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
-            peak_time_inhib_sim <- rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
-            curvature_inhib_sim <- rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
+            amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
+            peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
+            curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
 
             # in this model, there is no variation in the thresholds
             # exec_threshold_sim <- exec_threshold

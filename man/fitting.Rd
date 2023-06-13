@@ -13,11 +13,12 @@ fitting(
   upper_bounds,
   nstudies = 200,
   initial_pop_constraints = FALSE,
-  error_function,
-  model_version,
+  error_function = c("g2", "rmse", "sse", "wsse", "ks"),
+  model_version = c("TMM", "PIM"),
   method = c("SANN", "GenSA", "pso", "hydroPSO", "DEoptim", "Nelder-Mead", "BFGS",
     "L-BFGS-B", "bobyqa", "nlminb", "all_methods", "optimParallel"),
-  maxit = 100
+  maxit = 100,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -39,14 +40,16 @@ fitting(
 
 \item{error_function}{Character, error function to be used when fitting the model.}
 
-\item{model_version}{Version of the model ("TMM" or "PIM").}
+\item{model_version}{Character, version of the model ("TMM" or "PIM").}
 
-\item{method}{Optimisation method.}
+\item{method}{Character, optimisation method (DEoptim seems to work best).}
 
-\item{maxit}{Maximum number of iterations.}
+\item{maxit}{Numeric, maximum number of iterations.}
+
+\item{verbose}{Boolean, whether to print progress during fitting.}
 }
 \value{
-The optimised parameter values and further convergence informatio
+The optimised parameter values and further convergence information.
 }
 \description{
 Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.

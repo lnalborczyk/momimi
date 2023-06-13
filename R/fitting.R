@@ -11,11 +11,12 @@
 #' @param nstudies Numeric, number of starting values in the LHS.
 #' @param initial_pop_constraints Boolean, whether to use additional constraints when sampling initial parameter values.
 #' @param error_function Character, error function to be used when fitting the model.
-#' @param model_version Version of the model ("TMM" or "PIM").
-#' @param method Optimisation method.
-#' @param maxit Maximum number of iterations.
+#' @param model_version Character, version of the model ("TMM" or "PIM").
+#' @param method Character, optimisation method (DEoptim seems to work best).
+#' @param maxit Numeric, maximum number of iterations.
+#' @param verbose Boolean, whether to print progress during fitting.
 #'
-#' @return The optimised parameter values and further convergence informatio
+#' @return The optimised parameter values and further convergence information.
 #'
 #' @importFrom magrittr %>%
 #'
@@ -29,15 +30,32 @@ fitting <- function (
         nsims = NULL,
         par_names = NULL,
         lower_bounds, upper_bounds,
-        nstudies = 200, initial_pop_constraints = FALSE,
-        error_function, model_version,
+        nstudies = 200,
+        initial_pop_constraints = FALSE,
+        error_function = c("g2", "rmse", "sse", "wsse", "ks"),
+        model_version = c("TMM", "PIM"),
         method = c(
             "SANN", "GenSA", "pso", "hydroPSO", "DEoptim",
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
             "all_methods", "optimParallel"
             ),
-        maxit = 100
+        maxit = 100, verbose = TRUE
         ) {
+
+    # defining parameter names according to the chosen model (if null)
+    if (is.null(par_names) ) {
+
+        if (model_version == "TMM") {
+
+            par_names <- c("amplitude_activ", "peak_time_activ", "curvature_activ", "exec_threshold")
+
+        } else if (model_version == "PIM") {
+
+            par_names <- c("amplitude_ratio", "peak_time", "curvature_activ", "curvature_inhib")
+
+        }
+
+    }
 
     # some tests for variable types
     stopifnot("data must be a dataframe..." = is.data.frame(data) )
@@ -143,7 +161,7 @@ fitting <- function (
 
         # starting the optimisation
         fit <- DEoptim::DEoptim(
-            fn = loss,
+            fn = momimi::loss,
             data = data,
             nsims = nsims,
             error_function = error_function,
@@ -154,7 +172,7 @@ fitting <- function (
                 # maximum number of iterations
                 itermax = maxit,
                 # printing progress iteration
-                trace = TRUE,
+                trace = verbose,
                 # printing progress every 10 iterations
                 # trace = 10,
                 # defines the differential evolution strategy (defaults to 2)
@@ -194,7 +212,7 @@ fitting <- function (
             )
 
         # setting the class of the resulting object
-        class(fitt) <- c("DEoptim_momimi", "DEoptim", "data.frame")
+        class(fit) <- c("DEoptim_momimi", "DEoptim", "data.frame")
 
     } else if (method %in% c("Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb") ) {
 
@@ -255,5 +273,172 @@ fitting <- function (
     }
 
     return (fit)
+
+}
+
+#' @export
+
+plot.DEoptim_momimi <- function (
+        x, original_data,
+        method = c("ppc", "latent"),
+        action_mode = c("executed", "imagined"),
+        model_version = c("TMM", "PIM"),
+        ...
+        ) {
+
+    # some tests
+    method <- match.arg(method)
+    action_mode <- match.arg(action_mode)
+    model_version <- match.arg(model_version)
+
+    # retrieving estimated pars
+    estimated_pars <- as.numeric(x$optim$bestmem)
+
+    if (method == "ppc") {
+
+        # simulating data using these parameter values
+        simulating(
+            nsims = 200,
+            nsamples = 2000,
+            true_pars = estimated_pars,
+            action_mode = action_mode,
+            model_version = model_version
+            ) %>%
+            # removing NAs or aberrant simulated data
+            stats::na.omit() %>%
+            dplyr::filter(.data$reaction_time < 3 & .data$movement_time < 3) %>%
+            tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time) %>%
+            ggplot2::ggplot(ggplot2::aes(x = .data$value, colour = .data$name, fill = .data$name) ) +
+            ggplot2::geom_density(
+                data = original_data %>% tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time),
+                color = "white",
+                position = "identity",
+                alpha = 0.5, show.legend = FALSE
+                ) +
+            ggplot2::geom_density(size = 1, fill = NA, show.legend = FALSE) +
+            ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
+            ggplot2::labs(
+                title = "Observed and simulated distributions of RTs/MTs",
+                x = "Reaction/Movement time (in seconds)", y = "Probability density"
+                )
+
+    } else if (method == "latent") {
+
+        if (model_version == "TMM") {
+
+            par_names <- c("amplitude_activ", "peak_time_activ", "curvature_activ", "exec_threshold")
+
+            parameters_estimates_summary <- paste(as.vector(rbind(
+                paste0(par_names, ": "),
+                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                ) ), collapse = "") %>% stringr::str_sub(end = -2)
+
+            model(
+                nsims = 500, nsamples = 2000,
+                exec_threshold = estimated_pars[4] * estimated_pars[1],
+                imag_threshold = 0.5 * estimated_pars[4] * estimated_pars[1],
+                amplitude_activ = estimated_pars[1],
+                peak_time_activ = log(estimated_pars[2]),
+                curvature_activ = estimated_pars[3],
+                model_version = "TMM",
+                full_output = TRUE
+                ) %>%
+                tidyr::pivot_longer(cols = .data$activation) %>%
+                ggplot2::ggplot(
+                    ggplot2::aes(
+                        x = .data$time, y = .data$value,
+                        group = interaction(.data$sim, .data$name)
+                        )
+                    ) +
+                ggplot2::geom_hline(
+                    yintercept = estimated_pars[4] * estimated_pars[1],
+                    linetype = 2
+                    ) +
+                ggplot2::geom_hline(
+                    yintercept = 0.5 * estimated_pars[4] * estimated_pars[1],
+                    linetype = 2
+                    ) +
+                # plotting average
+                ggplot2::stat_summary(
+                    ggplot2::aes(group = .data$name, colour = .data$name),
+                    fun = "median", geom = "line",
+                    linewidth = 1, alpha = 1,
+                    show.legend = FALSE
+                    ) +
+                # displaying estimated parameter values
+                ggplot2::annotate(
+                    geom = "label",
+                    x = Inf, y = Inf,
+                    hjust = 1, vjust = 1,
+                    label = parameters_estimates_summary,
+                    family = "Courier"
+                    ) +
+                ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
+                ggplot2::labs(
+                    title = "Latent functions",
+                    x = "Time within a trial (in seconds)",
+                    y = "Activation/inhibition (a.u.)",
+                    colour = "",
+                    fill = ""
+                    )
+
+        } else if (model_version == "PIM") {
+
+            par_names <- c("amplitude_ratio", "peak_time", "curvature_activ", "curvature_inhib")
+
+            parameters_estimates_summary <- paste(as.vector(rbind(
+                paste0(par_names, ": "),
+                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                ) ), collapse = "") %>% stringr::str_sub(end = -2)
+
+            model(
+                nsims = 500, nsamples = 2000,
+                exec_threshold = 1, imag_threshold = 0.5,
+                amplitude_activ = 1.5,
+                peak_time_activ = log(estimated_pars[2]),
+                curvature_activ = estimated_pars[3],
+                amplitude_inhib = 1.5 / estimated_pars[1],
+                peak_time_inhib = log(estimated_pars[2]),
+                curvature_inhib = estimated_pars[4] * estimated_pars[3],
+                model_version = "PIM",
+                full_output = TRUE
+                ) %>%
+                tidyr::pivot_longer(cols = .data$activation:.data$balance) %>%
+                ggplot2::ggplot(
+                    ggplot2::aes(
+                        x = .data$time, y = .data$value,
+                        group = interaction(.data$sim, .data$name),
+                        colour = .data$name
+                        )
+                    ) +
+                ggplot2::geom_hline(yintercept = 1, linetype = 2) +
+                ggplot2::geom_hline(yintercept = 0.5, linetype = 2) +
+                # plotting average
+                ggplot2::stat_summary(
+                    ggplot2::aes(group = .data$name, colour = .data$name),
+                    fun = "median", geom = "line",
+                    linewidth = 1, alpha = 1,
+                    show.legend = TRUE
+                    ) +
+                # displaying estimated parameter values
+                ggplot2::annotate(
+                    geom = "label",
+                    x = Inf, y = Inf,
+                    hjust = 1, vjust = 1,
+                    label = parameters_estimates_summary,
+                    family = "Courier"
+                    ) +
+                ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
+                ggplot2::labs(
+                    title = "Latent activation, inhibition, and balance functions",
+                    x = "Time within a trial (in seconds)",
+                    y = "Activation/inhibition (a.u.)",
+                    colour = "",
+                    fill = ""
+                    )
+
+        }
+
+    }
 
 }
