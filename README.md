@@ -37,8 +37,6 @@ simulated_data <- model(
     exec_threshold = 1, imag_threshold = 0.5,
     amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
     model_version = "TMM",
-    # amplitude_inhib = 0.8, peak_time_inhib = log(0.5), curvature_inhib = 0.6,
-    # model_version = "PIM",
     full_output = TRUE
     )
 ```
@@ -83,16 +81,16 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3712421     0.2942656    imagined
-#> 2      0.3806787     0.2684245    imagined
-#> 3      0.3715586     0.3110980    imagined
-#> 4      0.3671511     0.3004650    imagined
-#> 5      0.3724952     0.2979726    imagined
-#> 6      0.3663551     0.3092010    imagined
-#> 7      0.3721625     0.3078148    imagined
-#> 8      0.3818147     0.2841863    imagined
-#> 9      0.3673456     0.2945165    imagined
-#> 10     0.3736252     0.2936363    imagined
+#> 1      0.3737138     0.2939052    imagined
+#> 2      0.3687401     0.2971314    imagined
+#> 3      0.3692795     0.2967416    imagined
+#> 4      0.3749102     0.2823932    imagined
+#> 5      0.3770336     0.2877476    imagined
+#> 6      0.3779644     0.2948497    imagined
+#> 7      0.3727880     0.2820960    imagined
+#> 8      0.3828828     0.2888685    imagined
+#> 9      0.3753141     0.2910323    imagined
+#> 10     0.3772529     0.3120286    imagined
 ```
 
 We fit the model and use extra constraints on the initial parameter
@@ -106,10 +104,10 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM",
-    lower_bounds = c(0, 0.5, 0, 0),
-    upper_bounds = c(2, 1.5, 1, 1),
+    lower_bounds = c(0, 0.25, 0.1, 1),
+    upper_bounds = c(2, 1.25, 0.6, 2),
     initial_pop_constraints = TRUE,
-    maxit = 50
+    maxit = 10
     )
 ```
 
@@ -118,10 +116,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.72914 0.50004 0.24893 0.99165 
-#> best value    :  0.02302 
-#> after         :  50 generations 
-#> fn evaluated  :  10455 times 
+#> best member   :  0.72471 0.50014 0.3022 1.26014 
+#> best value    :  0.14154 
+#> after         :  10 generations 
+#> fn evaluated  :  2288 times 
 #> *************************************
 ```
 
