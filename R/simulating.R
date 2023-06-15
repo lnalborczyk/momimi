@@ -68,7 +68,6 @@ simulating <- function (
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%
-            # keeping only the relevant columns
             dplyr::select(
                 .data$sim,
                 reaction_time = paste0("onset_", substr(unique(.$action_mode), 1, 4) ),
@@ -95,7 +94,6 @@ simulating <- function (
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%
-            # keeping only the relevant columns
             dplyr::select(
                 .data$sim,
                 reaction_time = paste0("onset_", substr(unique(.$action_mode), 1, 4) ),

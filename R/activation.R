@@ -76,8 +76,20 @@ activation <- function (
             A = amplitude, mu = peak_time, sigma = curvature
             ) + diffusion_coef * sqrt(time_step) * stats::rnorm(n = 1, mean = 0, sd = 1)
 
-        # cumulative sum
-        activ_inhib <- pmax(cumsum(tidyr::replace_na(data = activ_inhib, replace = 0) ), 0)
+        # replacing the initial NA by 0
+        activ_inhib <- tidyr::replace_na(data = activ_inhib, replace = 0)
+
+        # cumulative sum (ceiling function)
+        # activ_inhib <- pmax(cumsum(activ_inhib), 0)
+
+        # correct cumulative sum (absorbing boundary)
+        activ_inhib <- purrr::accumulate(.x = activ_inhib, .f = ~ ifelse(.x + .y < 0, 0, .x + .y) )
+
+        # some testing
+        # activ_inhib <- tidyr::replace_na(data = activ_inhib, replace = 0)
+        # x <- pmax(cumsum(activ_inhib), 0)
+        # y <- purrr::accumulate(activ_inhib, ~ ifelse(.x + .y < 0, 0, .x + .y) )
+        # a <- data.frame(activ_inhib, cumsum(activ_inhib), x, y) %>% mutate(identical = x == y)
 
     }
 

@@ -33,6 +33,7 @@ Imports:
     magrittr,
     pso,
     parallel,
+    purrr,
     rlang,
     stringr,
     tgp,
