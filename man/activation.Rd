@@ -4,7 +4,13 @@
 \alias{activation}
 \title{Activation function}
 \usage{
-activation(time = 0, amplitude = 1.5, peak_time = 0, curvature = 0.4)
+activation(
+  time = 0,
+  amplitude = 1.5,
+  peak_time = 0,
+  curvature = 0.4,
+  uncertainty = c("par_specific", "overall", "brownian")
+)
 }
 \arguments{
 \item{time}{Numeric, time within a trial (in seconds).}
@@ -14,6 +20,8 @@ activation(time = 0, amplitude = 1.5, peak_time = 0, curvature = 0.4)
 \item{peak_time}{Numeric, peak time of the activation function.}
 
 \item{curvature}{Numeric, curvature of the activation function.}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 }
 \value{
 A dataframe

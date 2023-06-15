@@ -54,6 +54,38 @@ The optimised parameter values and further convergence information.
 \description{
 Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
 }
+\examples{
+\dontrun{
+plausible "true" parameter values in the TMM
+true_pars <- c(1.1, 0.5, 0.3, 1.25)
+
+# simulating data using these parameter values
+simulated_data <- simulating(
+    nsims = 200,
+    nsamples = 2000,
+    true_pars = true_pars,
+    action_mode = "imagined",
+    model_version = "TMM"
+    )
+
+# fitting the model
+results <- fitting(
+    data = simulated_data,
+    nsims = 200,
+    error_function = "g2",
+    method = "DEoptim",
+    model_version = "TMM",
+    lower_bounds = c(0, 0.25, 0.1, 1),
+    upper_bounds = c(2, 1.25, 0.6, 2),
+    initial_pop_constraints = TRUE,
+    maxit = 10
+    )
+
+# fitting summary
+summary(results)
+}
+
+}
 \author{
 Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com}.
 }

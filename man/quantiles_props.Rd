@@ -7,15 +7,21 @@
 quantiles_props(x, quants)
 }
 \arguments{
-\item{x}{Numeric, vector of observations (RTs or MTs)}
+\item{x}{Numeric, vector of observations (RTs or MTs).}
 
-\item{quants}{Numeric, vector of quantiles bounds}
+\item{quants}{Numeric, vector of quantiles bounds.}
 }
 \value{
 Vector of proportions per quantile.
 }
 \description{
 Computes the proportion of observations within quantiles
+}
+\examples{
+\dontrun{
+quantiles_props(x = rnorm(1e2), quants = c(0.2, 0.4, 0.6, 0.8) )
+}
+
 }
 \author{
 Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com}.

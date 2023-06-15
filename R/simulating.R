@@ -45,7 +45,7 @@ simulating <- function (
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
     stopifnot("true_pars must be a numeric..." = is.numeric(true_pars) )
 
-    # testing whether only 4 pars have been specified
+    # some additional tests
     stopifnot("true_pars must be a numeric of length 4..." = length(true_pars) == 4)
 
     # action_mode should be one of above

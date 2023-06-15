@@ -11,5 +11,10 @@ Provides source code for the "threshold modulation model" (TMM) and the "paralle
 \author{
 \strong{Maintainer}: Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com} (\href{https://orcid.org/0000-0002-7419-9855}{ORCID})
 
+Other contributors:
+\itemize{
+  \item Thibault Gajdos \email{thibault.gajdos@gmail.com} [contributor]
+}
+
 }
 \keyword{internal}

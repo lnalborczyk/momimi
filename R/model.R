@@ -13,6 +13,7 @@
 #' @param peak_time_inhib Numeric, peak time of the inhibition function.
 #' @param curvature_inhib Numeric, curvature of the inhibition function.
 #' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
+#' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
 #'
 #' @return A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
@@ -47,15 +48,20 @@ model <- function (
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
         model_version = c("TMM", "PIM"),
+        uncertainty = c("par_specific", "brownian", "overall"),
         full_output = FALSE
         ) {
 
     # some tests for variable types
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
+    stopifnot("curvature_inhib must be larger than curvature_activ..." = curvature_inhib > curvature_activ)
 
     # model_version should be one of above
     model_version <- match.arg(model_version)
+
+    # uncertainty should be one of above
+    uncertainty <- match.arg(uncertainty)
 
     # if full_output = TRUE, returns the full activation, inhibition,
     # and balance functions
@@ -76,7 +82,8 @@ model <- function (
                     time = .data$time,
                     amplitude = amplitude_activ,
                     peak_time = peak_time_activ,
-                    curvature = curvature_activ
+                    curvature = curvature_activ,
+                    uncertainty = uncertainty
                     )
                 ) %>%
             dplyr::mutate(
@@ -84,7 +91,8 @@ model <- function (
                     time = .data$time,
                     amplitude = amplitude_inhib,
                     peak_time = peak_time_inhib,
-                    curvature = curvature_inhib
+                    curvature = curvature_inhib,
+                    uncertainty = uncertainty
                     )
                 ) %>%
             {if (model_version == "PIM") dplyr::mutate(., balance = .data$activation / .data$inhibition) else dplyr::mutate(., balance = .data$activation)} %>%
@@ -270,7 +278,7 @@ model <- function (
 
 plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) {
 
-    # ensuring that the method is one of the above
+    # ensuring that method is one of the above
     method <- match.arg(method)
 
     if (method == "functions") {
@@ -297,9 +305,9 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 ) +
             # plotting some individual simulations
             ggplot2::geom_line(
-                data = . %>% dplyr::filter(.data$sim %in% unique(.data$sim)[1:50]),
+                data = . %>% dplyr::filter(.data$sim %in% unique(.data$sim)[1:20]),
                 # data = dplyr::filter(.data$sim %in% unique(.data$sim)[1:50]),
-                linewidth = 0.5, alpha = 0.1,
+                linewidth = 0.5, alpha = 0.2,
                 # colour = "grey",
                 show.legend = FALSE
                 ) +
@@ -311,7 +319,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 linewidth = 1, alpha = 1,
                 show.legend = TRUE
                 ) +
-            ggplot2::ylim(c(0, 1.5) ) +
+            # ggplot2::ylim(c(0, 1.5) ) +
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
                 title = "Simulating activation/inhibition patterns",
@@ -365,5 +373,13 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 )
 
     }
+
+}
+
+#' @export
+
+plot.momimi <- function (x, ...) {
+
+    plot.momimi_full(x = x, method = "distributions")
 
 }

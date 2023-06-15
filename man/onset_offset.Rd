@@ -38,6 +38,15 @@ A vector containing the onset (i.e., the lowest value above the threshold) and t
 \description{
 Finding onset and offset of the activation or balance functions (according to the model and some threshold).
 }
+\examples{
+\dontrun{
+onset_offset(
+    amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
+    thresh = 1, model_version = "TMM"
+    )
+}
+
+}
 \author{
 Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com}.
 }

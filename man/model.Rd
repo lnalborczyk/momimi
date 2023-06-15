@@ -16,6 +16,7 @@ model(
   peak_time_inhib = 0,
   curvature_inhib = 0.6,
   model_version = c("TMM", "PIM"),
+  uncertainty = c("par_specific", "brownian", "overall"),
   full_output = FALSE
 )
 }
@@ -41,6 +42,8 @@ model(
 \item{curvature_inhib}{Numeric, curvature of the inhibition function.}
 
 \item{model_version}{Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{full_output}{Boolean, indicating whether activ/inhib curves should be returned.}
 }

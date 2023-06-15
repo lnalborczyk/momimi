@@ -13,6 +13,14 @@
 #'
 #' @return A vector containing the onset (i.e., the lowest value above the threshold) and the offset (i.e., the highest value above the threshold).
 #'
+#' @examples
+#' \dontrun{
+#' onset_offset(
+#'     amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
+#'     thresh = 1, model_version = "TMM"
+#'     )
+#' }
+#'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
 #'
 #' @export
