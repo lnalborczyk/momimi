@@ -54,9 +54,9 @@ activation <- function (
 
     } else if (uncertainty == "overall") {
 
-        activ_inhib <- amplitude *
+        activ_inhib <- pmax(amplitude *
             exp(-(log(time) - peak_time)^2 / (2 * curvature^2) ) +
-            stats::rnorm(n = 1, mean = 0, sd = 0.01)
+            stats::rnorm(n = 1, mean = 0, sd = 0.01), 0)
 
     } else if (uncertainty == "brownian") {
 
@@ -70,17 +70,14 @@ activation <- function (
 
         }
 
-        # time increment
-        dt <- 0.001
-
         # diffusion process
-        activ_inhib <- dt * d_activation(
+        activ_inhib <- time_step * d_activation(
             t = time,
             A = amplitude, mu = peak_time, sigma = curvature
-            ) + diffusion_coef * sqrt(dt) * stats::rnorm(n = 1, mean = 0, sd = 1)
+            ) + diffusion_coef * sqrt(time_step) * stats::rnorm(n = 1, mean = 0, sd = 1)
 
         # cumulative sum
-        activ_inhib <- cumsum(tidyr::replace_na(data = activ_inhib, replace = 0) )
+        activ_inhib <- pmax(cumsum(tidyr::replace_na(data = activ_inhib, replace = 0) ), 0)
 
     }
 

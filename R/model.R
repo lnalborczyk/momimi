@@ -74,7 +74,7 @@ model <- function (
         results <- data.frame(
             sim = rep(1:nsims, each = nsamples),
             sample = rep(1:nsamples, nsims),
-            time = rep(1:nsamples, nsims) / 1e3,
+            time = rep(1:nsamples, nsims) * time_step,
             exec_threshold = exec_threshold,
             imag_threshold = imag_threshold
             ) %>%
