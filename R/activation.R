@@ -7,6 +7,8 @@
 #' @param peak_time Numeric, peak time of the activation function.
 #' @param curvature Numeric, curvature of the activation function.
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
+#' @param diffusion_coef Numeric, diffusion coefficient.
+#' @param time_step Numeric, time step used to numerical approximation.
 #'
 #' @return A dataframe
 #'
@@ -32,7 +34,8 @@
 activation <- function (
         time = 0,
         amplitude = 1.5, peak_time = 0, curvature = 0.4,
-        uncertainty = c("par_specific", "overall", "brownian")
+        uncertainty = c("par_specific", "overall", "brownian"),
+        diffusion_coef = 0.001, time_step = 0.001
         ) {
 
     # uncertainty should be one of above
@@ -67,17 +70,14 @@ activation <- function (
 
         }
 
-        # scaling constant
-        theta <- 0.01
-
-        # diffusion constant
-        dt <- 0.01
+        # time increment
+        dt <- 0.001
 
         # diffusion process
         activ_inhib <- dt * d_activation(
             t = time,
             A = amplitude, mu = peak_time, sigma = curvature
-            ) + theta * sqrt(dt) * stats::rnorm(n = 1, mean = 0, sd = 1)
+            ) + diffusion_coef * sqrt(dt) * stats::rnorm(n = 1, mean = 0, sd = 1)
 
         # cumulative sum
         activ_inhib <- cumsum(tidyr::replace_na(data = activ_inhib, replace = 0) )

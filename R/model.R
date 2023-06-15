@@ -15,6 +15,7 @@
 #' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
+#' @param time_step Numeric, time step used to numerical approximation.
 #'
 #' @return A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 #'
@@ -49,7 +50,8 @@ model <- function (
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
         model_version = c("TMM", "PIM"),
         uncertainty = c("par_specific", "brownian", "overall"),
-        full_output = FALSE
+        full_output = FALSE,
+        time_step = 0.001
         ) {
 
     # some tests for variable types
@@ -83,7 +85,8 @@ model <- function (
                     amplitude = amplitude_activ,
                     peak_time = peak_time_activ,
                     curvature = curvature_activ,
-                    uncertainty = uncertainty
+                    uncertainty = uncertainty,
+                    time_step = time_step
                     )
                 ) %>%
             dplyr::mutate(
@@ -92,7 +95,8 @@ model <- function (
                     amplitude = amplitude_inhib,
                     peak_time = peak_time_inhib,
                     curvature = curvature_inhib,
-                    uncertainty = uncertainty
+                    uncertainty = uncertainty,
+                    time_step = time_step
                     )
                 ) %>%
             {if (model_version == "PIM") dplyr::mutate(., balance = .data$activation / .data$inhibition) else dplyr::mutate(., balance = .data$activation)} %>%
@@ -105,7 +109,7 @@ model <- function (
             dplyr::mutate(offset_imag = which(.data$balance > .data$imag_threshold) %>% dplyr::last() ) %>%
             dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
             # convert from ms to seconds
-            dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . / 1e3) ) %>%
+            dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
             dplyr::ungroup()
 
         # setting the class of the resulting object

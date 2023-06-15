@@ -17,7 +17,8 @@ model(
   curvature_inhib = 0.6,
   model_version = c("TMM", "PIM"),
   uncertainty = c("par_specific", "brownian", "overall"),
-  full_output = FALSE
+  full_output = FALSE,
+  time_step = 0.001
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ model(
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{full_output}{Boolean, indicating whether activ/inhib curves should be returned.}
+
+\item{time_step}{Numeric, time step used to numerical approximation.}
 }
 \value{
 A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.

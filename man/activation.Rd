@@ -9,7 +9,9 @@ activation(
   amplitude = 1.5,
   peak_time = 0,
   curvature = 0.4,
-  uncertainty = c("par_specific", "overall", "brownian")
+  uncertainty = c("par_specific", "overall", "brownian"),
+  diffusion_coef = 0.001,
+  time_step = 0.001
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ activation(
 \item{curvature}{Numeric, curvature of the activation function.}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
+
+\item{diffusion_coef}{Numeric, diffusion coefficient.}
+
+\item{time_step}{Numeric, time step used to numerical approximation.}
 }
 \value{
 A dataframe
