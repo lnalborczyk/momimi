@@ -148,8 +148,9 @@ plot(
 ## References
 
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X.
-(*to be submitted*). Towards formal models of inhibitory mechanisms
-involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022).
+(*submitted*). Towards formal models of inhibitory mechanisms involved
+in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint
+available at <https://psyarxiv.com/tz6x2/>.
 
 ## Getting help
 

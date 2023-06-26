@@ -1,7 +1,7 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
 Version: 0.0.1
-Date: 2023-06-15
+Date: 2023-06-26
 Authors@R: 
     c(
     person(

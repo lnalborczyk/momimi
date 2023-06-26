@@ -235,8 +235,8 @@ loss <- function (
             curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
 
             # in this model, there is no variation in the thresholds
-            # exec_threshold_sim <- exec_threshold
-            # imag_threshold_sim <- imag_threshold
+            exec_threshold_sim <- exec_threshold
+            imag_threshold_sim <- imag_threshold
 
             # computing the predicted RT and MT in imagery
             onset_offset_imag <- onset_offset(
@@ -246,7 +246,7 @@ loss <- function (
                 amplitude_inhib = curvature_inhib_sim,
                 peak_time_inhib = peak_time_inhib_sim,
                 curvature_inhib = curvature_inhib_sim,
-                thresh = imag_threshold,
+                thresh = imag_threshold_sim,
                 model_version = model_version
                 )
 
@@ -261,7 +261,7 @@ loss <- function (
                 amplitude_inhib = curvature_inhib_sim,
                 peak_time_inhib = peak_time_inhib_sim,
                 curvature_inhib = curvature_inhib_sim,
-                thresh = exec_threshold,
+                thresh = exec_threshold_sim,
                 model_version = model_version
                 )
 
@@ -355,12 +355,12 @@ loss <- function (
                     balance_function(
                         exec_threshold = .data$exec_threshold,
                         imag_threshold = .data$imag_threshold,
-                        amplitude_activ = .data$amplitude_activ,
-                        peak_time_activ = .data$peak_time_activ,
-                        curvature_activ = .data$curvature_activ,
-                        amplitude_inhib = .data$amplitude_inhib,
-                        peak_time_inhib = .data$peak_time_inhib,
-                        curvature_inhib = .data$curvature_inhib
+                        amplitude_activ = amplitude_activ,
+                        peak_time_activ = peak_time_activ,
+                        curvature_activ = curvature_activ,
+                        amplitude_inhib = amplitude_inhib,
+                        peak_time_inhib = peak_time_inhib,
+                        curvature_inhib = curvature_inhib
                         )
                     )
                 ) %>%

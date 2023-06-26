@@ -39,6 +39,9 @@ onset_offset <- function (
         onset <- exp(peak_time_activ - sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
         offset <- exp(peak_time_activ + sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
 
+        # direct formula for mt
+        # mt <- 2 * exp(peak_time_activ) * sinh(curvature_activ * sqrt(2 * log(amplitude_activ / thres) ) )
+
         return (c(onset, offset) )
 
         } else if (model_version == "PIM") {
@@ -48,6 +51,8 @@ onset_offset <- function (
             c <- curvature_activ^2 * peak_time_inhib^2 - curvature_inhib^2 * peak_time_activ^2 - 2 * curvature_activ^2 * curvature_inhib^2 * (log(amplitude_activ / amplitude_inhib) - log(thresh) )
             onset <- exp((-b - sqrt(b^2 - 4 * a * c) ) / (2 * a) )
             offset <- exp((-b + sqrt(b^2 - 4 * a * c) ) / (2 * a) )
+
+            # direct formula for mt?
 
             return (c(onset, offset) )
 

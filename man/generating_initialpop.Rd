@@ -36,7 +36,7 @@ generating_initialpop(
 \item{verbose}{Boolean, whether to print progress during fitting.}
 }
 \value{
-Returns a dataframe a plausible (according to custom constraints) initial parameter values.
+Returns a dataframe containing plausible (according to custom constraints) initial parameter values.
 }
 \description{
 Generating plausible initial parameter values for DEoptim based on empirical constraints.

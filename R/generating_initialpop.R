@@ -12,7 +12,7 @@
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param verbose Boolean, whether to print progress during fitting.
 #'
-#' @return Returns a dataframe a plausible (according to custom constraints) initial parameter values.
+#' @return Returns a dataframe containing plausible (according to custom constraints) initial parameter values.
 #'
 #' @importFrom rlang .data
 #' @importFrom stats rnorm

@@ -85,12 +85,6 @@ activation <- function (
         # correct cumulative sum (absorbing boundary)
         activ_inhib <- purrr::accumulate(.x = activ_inhib, .f = ~ ifelse(.x + .y < 0, 0, .x + .y) )
 
-        # some testing
-        # activ_inhib <- tidyr::replace_na(data = activ_inhib, replace = 0)
-        # x <- pmax(cumsum(activ_inhib), 0)
-        # y <- purrr::accumulate(activ_inhib, ~ ifelse(.x + .y < 0, 0, .x + .y) )
-        # a <- data.frame(activ_inhib, cumsum(activ_inhib), x, y) %>% mutate(identical = x == y)
-
     }
 
     # returning it

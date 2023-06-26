@@ -44,7 +44,7 @@
 #'     lower_bounds = c(0, 0.25, 0.1, 1),
 #'     upper_bounds = c(2, 1.25, 0.6, 2),
 #'     initial_pop_constraints = TRUE,
-#'     maxit = 10
+#'     maxit = 100
 #'     )
 #'
 #' # fitting summary
@@ -238,7 +238,8 @@ fitting <- function (
                 steptol = 1000,
                 # using all available cores
                 parallelType = "parallel",
-                packages = c("DEoptim", "tidyverse", "lhs", "momimi")
+                # packages = c("DEoptim", "tidyverse", "lhs", "momimi")
+                packages = c("DEoptim", "tidyverse", "tgp", "momimi")
                 )
             )
 
@@ -391,7 +392,8 @@ plot.DEoptim_momimi <- function (
                     ) +
                 # plotting average
                 ggplot2::stat_summary(
-                    ggplot2::aes(group = .data$name, colour = .data$name),
+                    # ggplot2::aes(group = .data$name, colour = .data$name),
+                    ggplot2::aes(group = .data$name),
                     fun = "median", geom = "line",
                     linewidth = 1, alpha = 1,
                     show.legend = FALSE
