@@ -88,13 +88,13 @@ We fit the model and use extra constraints on the initial parameter values to fa
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 500,
+    nsims = 200,
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
     lower_bounds = c(1, 0.25, 0.1),
     upper_bounds = c(2, 1.25, 0.6),
-    initial_pop_constraints = FALSE,
+    initial_pop_constraints = TRUE,
     maxit = 100
     )
 ```
@@ -118,6 +118,12 @@ plot(
     x = results, original_data = simulated_data,
     method = "ppc", model_version = "TMM3", action_mode = "imagined"
     )
+```
+
+We can also visualise the trajectory in parameter space during optimisation interactively using `plotly` (not shown below).
+
+```{r optimisation, eval = FALSE}
+plot(x = results, method = "optimisation")
 ```
 
 ## References

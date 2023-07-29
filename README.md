@@ -82,16 +82,16 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3191180     0.4563459    imagined
-#> 2      0.3281299     0.4424445    imagined
-#> 3      0.3166157     0.4672474    imagined
-#> 4      0.3260946     0.4475316    imagined
-#> 5      0.3178937     0.4536711    imagined
-#> 6      0.3223118     0.4705083    imagined
-#> 7      0.3159033     0.4603504    imagined
-#> 8      0.3248285     0.4388826    imagined
-#> 9      0.3280234     0.4430937    imagined
-#> 10     0.3226074     0.4283027    imagined
+#> 1      0.3262840     0.4374406    imagined
+#> 2      0.3274168     0.4519233    imagined
+#> 3      0.3267344     0.4614515    imagined
+#> 4      0.3232280     0.4471685    imagined
+#> 5      0.3203946     0.4689087    imagined
+#> 6      0.3224046     0.4295186    imagined
+#> 7      0.3205554     0.4621102    imagined
+#> 8      0.3293901     0.4461382    imagined
+#> 9      0.3304811     0.4564168    imagined
+#> 10     0.3278175     0.4442933    imagined
 ```
 
 We fit the model and use extra constraints on the initial parameter
@@ -101,13 +101,13 @@ values to facilitate convergence (fitting can take a while).
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 500,
+    nsims = 200,
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
     lower_bounds = c(1, 0.25, 0.1),
     upper_bounds = c(2, 1.25, 0.6),
-    initial_pop_constraints = FALSE,
+    initial_pop_constraints = TRUE,
     maxit = 100
     )
 ```
@@ -117,10 +117,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.07338 0.4994 0.39119 
-#> best value    :  0.00408 
+#> best member   :  1.09076 0.49981 0.39729 
+#> best value    :  0.00685 
 #> after         :  100 generations 
-#> fn evaluated  :  20200 times 
+#> fn evaluated  :  22220 times 
 #> *************************************
 ```
 
@@ -145,6 +145,13 @@ plot(
 ```
 
 <img src="man/figures/README-ppc-1.png" width="75%" />
+
+We can also visualise the trajectory in parameter space during
+optimisation interactively using `plotly` (not shown below).
+
+``` r
+plot(x = results, method = "optimisation")
+```
 
 ## References
 

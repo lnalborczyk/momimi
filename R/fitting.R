@@ -242,7 +242,6 @@ fitting <- function (
                 steptol = 1000,
                 # using all available cores
                 parallelType = "parallel",
-                # packages = c("DEoptim", "tidyverse", "lhs", "momimi")
                 packages = c("DEoptim", "tidyverse", "tgp", "momimi")
                 )
             )
@@ -316,7 +315,7 @@ fitting <- function (
 
 plot.DEoptim_momimi <- function (
         x, original_data,
-        method = c("ppc", "latent"),
+        method = c("ppc", "latent", "optimisation"),
         action_mode = c("executed", "imagined"),
         model_version = c("TMM3", "TMM4", "PIM"),
         ...
@@ -543,6 +542,57 @@ plot.DEoptim_momimi <- function (
                     )
 
         }
+
+    } else if (method == "optimisation") {
+
+        # plotting optimisation paths in parameter space
+        optimisation_results <- data.frame(x$member$bestmemit) %>%
+            dplyr::mutate(iteration = 1:nrow(.) )
+
+        # plotting in 2D
+        # optimisation_results %>%
+        #     dplyr::distinct() %>%
+        #     ggplot2::ggplot(ggplot2::aes(x = par1, y = par2, color = iteration) ) +
+        #     ggplot2::geom_point(show.legend = FALSE) +
+        #     ggplot2::geom_path(show.legend = FALSE) +
+        #     ggplot2::geom_point(
+        #         data = data.frame(par1 = true_pars[1], par2 = true_pars[2], par3 = true_pars[3]),
+        #         aes(x = par1, y = par2),
+        #         shape = "+",
+        #         colour = "red",
+        #         size = 10,
+        #         inherit.aes = FALSE,
+        #         show.legend = FALSE
+        #         ) +
+        #     ggplot2::theme_bw(base_size = 10, base_family = "Open Sans") +
+        #     ggplot2::labs(x = "Parameter 1", y = "Parameter 2")
+
+        # static 3D plot
+        # plot3D::scatter3D(
+        #     x = optimisation_results$par1, y = optimisation_results$par2,
+        #     z = optimisation_results$par3, colvar = optimisation_results$iteration,
+        #     phi = 20, bty = "b2", colkey = FALSE,
+        #     col = terrain.colors(100),
+        #     pch = 19, cex = 1,
+        #     xlab = "Parameter 1", ylab = "Parameter 2", zlab = "Parameter 3",
+        #     xlim = range(optimisation_results$par1),
+        #     ylim = range(optimisation_results$par2),
+        #     zlim = range(optimisation_results$par3)
+        #     )
+
+        # dynamic 3D plot
+        plotly::plot_ly(
+            data = dplyr::distinct(optimisation_results),
+            x = ~.data$par1, y = ~.data$par2, z = ~.data$par3
+            ) %>%
+            plotly::layout(
+                scene = list(
+                    xaxis = list(title = "Parameter 1"),
+                    yaxis = list(title = "Parameter 2"),
+                    zaxis = list(title = "Parameter 3")
+                    )
+                ) %>%
+            plotly::add_trace(type = "scatter3d", mode = "markers+lines", color = ~iteration)
 
     }
 

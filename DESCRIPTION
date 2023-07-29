@@ -37,7 +37,8 @@ Imports:
     rlang,
     stringr,
     tgp,
-    tidyr
+    tidyr,
+    plotly
 Suggests: 
     knitr,
     rmarkdown,

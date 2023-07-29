@@ -241,26 +241,6 @@ generating_initialpop <- function (
             final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
                 dplyr::rowwise() %>%
                 dplyr::mutate(
-                    balance_end_of_trial = .data$amplitude_activ *
-                        exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
-                    ) %>%
-                dplyr::mutate(
-                    included = dplyr::case_when(
-                        any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                        balance_end_of_trial > 0.25 * exec_threshold * amplitude_activ ~ FALSE,
-                        .default = TRUE
-                        )
-                    )
-
-        } else if (model_version == "TMM4") {
-
-            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
-                dplyr::rowwise() %>%
-                dplyr::mutate(
                     balance_end_of_trial = 1.5 *
                         exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
                     ) %>%
@@ -272,6 +252,26 @@ generating_initialpop <- function (
                         dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
                         balance_end_of_trial > 0.25 * exec_threshold * 1.5 ~ FALSE,
+                        .default = TRUE
+                        )
+                    )
+
+        } else if (model_version == "TMM4") {
+
+            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
+                dplyr::rowwise() %>%
+                dplyr::mutate(
+                    balance_end_of_trial = .data$amplitude_activ *
+                        exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
+                    ) %>%
+                dplyr::mutate(
+                    included = dplyr::case_when(
+                        any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
+                        dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
+                        balance_end_of_trial > 0.25 * exec_threshold * amplitude_activ ~ FALSE,
                         .default = TRUE
                         )
                     )
