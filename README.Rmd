@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides fitting and plotting utilities.
+The `momimi` package implements the "threshold modulation model" (TMM3/TMM4) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides fitting and plotting utilities.
     
 ## Installation
 
@@ -46,7 +46,7 @@ simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
     amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
-    model_version = "TMM",
+    model_version = "TMM3",
     full_output = TRUE
     )
 ```
@@ -67,7 +67,7 @@ We can also use the model to generate realistic data from known parameter values
 
 ```{r simulating2}
 # plausible "true" parameter values in the TMM
-true_pars <- c(1.1, 0.5, 0.3, 1.25)
+true_pars <- c(1.1, 0.5, 0.4)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
@@ -75,7 +75,7 @@ simulated_data <- simulating(
     nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined",
-    model_version = "TMM"
+    model_version = "TMM3"
     )
 
 # displaying the first ten rows of these data
@@ -88,14 +88,14 @@ We fit the model and use extra constraints on the initial parameter values to fa
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 200,
+    nsims = 500,
     error_function = "g2",
     method = "DEoptim",
-    model_version = "TMM",
-    lower_bounds = c(0, 0.25, 0.1, 1),
-    upper_bounds = c(2, 1.25, 0.6, 2),
-    initial_pop_constraints = TRUE,
-    maxit = 10
+    model_version = "TMM3",
+    lower_bounds = c(1, 0.25, 0.1),
+    upper_bounds = c(2, 1.25, 0.6),
+    initial_pop_constraints = FALSE,
+    maxit = 100
     )
 ```
 
@@ -107,7 +107,7 @@ summary(results)
 We can then plot the underlying (latent) function(s).
 
 ```{r latent}
-plot(x = results, method = "latent", model_version = "TMM") +
+plot(x = results, method = "latent", model_version = "TMM3") +
     labs(title = "Example of latent activation function")
 ```
 
@@ -116,7 +116,7 @@ We can also do predictive checks by comparing the data used to fit the model to 
 ```{r ppc}
 plot(
     x = results, original_data = simulated_data,
-    method = "ppc", model_version = "TMM", action_mode = "imagined"
+    method = "ppc", model_version = "TMM3", action_mode = "imagined"
     )
 ```
 

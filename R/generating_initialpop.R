@@ -7,7 +7,7 @@
 #' @param par_names Character, vector of parameter names.
 #' @param lower_bounds Numeric, vector of lower bounds for parameters.
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
-#' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
+#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param verbose Boolean, whether to print progress during fitting.
@@ -25,7 +25,7 @@
 generating_initialpop <- function (
         nstudies, action_mode,
         par_names, lower_bounds, upper_bounds,
-        model_version = c("TMM", "PIM"),
+        model_version = c("TMM3", "TMM4", "PIM"),
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         verbose = TRUE
         ) {
@@ -34,10 +34,10 @@ generating_initialpop <- function (
     stopifnot("nstudies must be a numeric..." = is.numeric(nstudies) )
     stopifnot("action_mode must be a character..." = is.character(action_mode) )
 
-    # testing whether only 4 pars have been specified
-    stopifnot("par_names must be a numeric of length 4..." = length(par_names) == 4)
-    stopifnot("lower_bounds must be a numeric of length 4..." = length(lower_bounds) == 4)
-    stopifnot("upper_bounds must be a numeric of length 4..." = length(upper_bounds) == 4)
+    # testing whether only 3 or 4 pars have been specified
+    stopifnot("par_names must be a numeric of length 3 or 4..." = length(par_names) %in% c(3, 4) )
+    stopifnot("lower_bounds must be a numeric of length 3 or 4..." = length(lower_bounds) %in% c(3, 4) )
+    stopifnot("upper_bounds must be a numeric of length 3 or 4..." = length(upper_bounds) %in% c(3, 4) )
     stopifnot("rt_contraints must be a numeric of length 2..." = length(rt_contraints) == 2)
     stopifnot("mt_contraints must be a numeric of length 2..." = length(mt_contraints) == 2)
 
@@ -63,7 +63,7 @@ generating_initialpop <- function (
         # setting columns names
         colnames(lhs_pars) <- par_names
 
-        if (model_version == "TMM") {
+        if (model_version %in% c("TMM3", "TMM4") ) {
 
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (
@@ -113,19 +113,39 @@ generating_initialpop <- function (
             }
 
             # computing the predicted RT and MT
-            predicted_rt_mt <- lhs_pars %>%
-                dplyr::rowwise() %>%
-                dplyr::do(
-                    suppressWarnings(
-                        activation_function(
-                            exec_threshold = .data$exec_threshold * .data$amplitude_activ,
-                            imag_threshold = 0.5 * .data$exec_threshold * .data$amplitude_activ,
-                            amplitude = .data$amplitude_activ,
-                            peak_time = log(.data$peak_time_activ),
-                            curvature = .data$curvature_activ
+            if (model_version == "TMM3") {
+
+                predicted_rt_mt <- lhs_pars %>%
+                    dplyr::rowwise() %>%
+                    dplyr::do(
+                        suppressWarnings(
+                            activation_function(
+                                exec_threshold = .data$exec_threshold * 1.5,
+                                imag_threshold = 0.5 * .data$exec_threshold * 1.5,
+                                amplitude = 1.5,
+                                peak_time = log(.data$peak_time_activ),
+                                curvature = .data$curvature_activ
+                                )
                             )
                         )
-                    )
+
+                } else if (model_version == "TMM4") {
+
+                    predicted_rt_mt <- lhs_pars %>%
+                        dplyr::rowwise() %>%
+                        dplyr::do(
+                            suppressWarnings(
+                                activation_function(
+                                    exec_threshold = .data$exec_threshold * .data$amplitude_activ,
+                                    imag_threshold = 0.5 * .data$exec_threshold * .data$amplitude_activ,
+                                    amplitude = .data$amplitude_activ,
+                                    peak_time = log(.data$peak_time_activ),
+                                    curvature = .data$curvature_activ
+                                    )
+                                )
+                            )
+
+                    }
 
         } else if (model_version == "PIM") {
 
@@ -216,7 +236,7 @@ generating_initialpop <- function (
         # predicted RT should be be between 0.2 and 1 seconds
         # predicted MT should be be between 0.2 and 2 seconds
         # balance at the end of the trial should come back below 0.25
-        if (model_version == "TMM") {
+        if (model_version == "TMM3") {
 
             final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
                 dplyr::rowwise() %>%
@@ -232,6 +252,26 @@ generating_initialpop <- function (
                         dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
                         balance_end_of_trial > 0.25 * exec_threshold * amplitude_activ ~ FALSE,
+                        .default = TRUE
+                        )
+                    )
+
+        } else if (model_version == "TMM4") {
+
+            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
+                dplyr::rowwise() %>%
+                dplyr::mutate(
+                    balance_end_of_trial = 1.5 *
+                        exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
+                    ) %>%
+                dplyr::mutate(
+                    included = dplyr::case_when(
+                        any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
+                        dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
+                        dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
+                        balance_end_of_trial > 0.25 * exec_threshold * 1.5 ~ FALSE,
                         .default = TRUE
                         )
                     )

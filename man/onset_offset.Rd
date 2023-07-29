@@ -12,7 +12,7 @@ onset_offset(
   peak_time_inhib = 0,
   curvature_inhib = 0.6,
   thresh,
-  model_version = c("TMM", "PIM")
+  model_version = c("TMM3", "TMM4", "PIM")
 )
 }
 \arguments{

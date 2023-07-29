@@ -28,13 +28,14 @@
 onset_offset <- function (
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
-        thresh, model_version = c("TMM", "PIM")
+        thresh,
+        model_version = c("TMM3", "TMM4", "PIM")
         ) {
 
     # model_version should be one of above
     model_version <- match.arg(model_version)
 
-    if (model_version == "TMM") {
+    if (model_version %in% c("TMM3", "TMM4") ) {
 
         onset <- exp(peak_time_activ - sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
         offset <- exp(peak_time_activ + sqrt(-2 * curvature_activ^2 * log(thresh / amplitude_activ) ) )
@@ -53,6 +54,7 @@ onset_offset <- function (
             offset <- exp((-b + sqrt(b^2 - 4 * a * c) ) / (2 * a) )
 
             # direct formula for mt?
+            # mt <- 2 * exp(peak_time_activ) * sinh(curvature_activ * sqrt(2 * log(amplitude_activ / thres) ) )
 
             return (c(onset, offset) )
 

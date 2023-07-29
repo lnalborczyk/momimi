@@ -9,7 +9,7 @@ simulating(
   nsamples = 2000,
   true_pars = NULL,
   action_mode = c("executed", "imagined"),
-  model_version = c("TMM", "PIM")
+  model_version = c("TMM3", "TMM4", "PIM")
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ simulating(
 
 \item{action_mode}{Character, whether to simulate executed or imagined trials.}
 
-\item{model_version}{Character, version of the model ("TMM" or "PIM").}
+\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
 }
 \value{
 A dataframe containing observation (i.e., RTs and MTs).
@@ -40,7 +40,7 @@ simulated_data <- simulating(
     nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined",
-    model_version = "TMM"
+    model_version = "TMM4"
     )
 }
 

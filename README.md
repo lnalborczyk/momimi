@@ -8,9 +8,10 @@ update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brigh
 [![GitHub
 downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements the “threshold modulation model” (TMM)
-and the “parallel inhibition model” (PIM) of motor inhibition during
-motor imagery and provides fitting and plotting utilities.
+The `momimi` package implements the “threshold modulation model”
+(TMM3/TMM4) and the “parallel inhibition model” (PIM) of motor
+inhibition during motor imagery and provides fitting and plotting
+utilities.
 
 ## Installation
 
@@ -36,7 +37,7 @@ simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
     amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
-    model_version = "TMM",
+    model_version = "TMM3",
     full_output = TRUE
     )
 ```
@@ -67,7 +68,7 @@ the original parameter values.
 
 ``` r
 # plausible "true" parameter values in the TMM
-true_pars <- c(1.1, 0.5, 0.3, 1.25)
+true_pars <- c(1.1, 0.5, 0.4)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
@@ -75,22 +76,22 @@ simulated_data <- simulating(
     nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined",
-    model_version = "TMM"
+    model_version = "TMM3"
     )
 
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3737138     0.2939052    imagined
-#> 2      0.3687401     0.2971314    imagined
-#> 3      0.3692795     0.2967416    imagined
-#> 4      0.3749102     0.2823932    imagined
-#> 5      0.3770336     0.2877476    imagined
-#> 6      0.3779644     0.2948497    imagined
-#> 7      0.3727880     0.2820960    imagined
-#> 8      0.3828828     0.2888685    imagined
-#> 9      0.3753141     0.2910323    imagined
-#> 10     0.3772529     0.3120286    imagined
+#> 1      0.3191180     0.4563459    imagined
+#> 2      0.3281299     0.4424445    imagined
+#> 3      0.3166157     0.4672474    imagined
+#> 4      0.3260946     0.4475316    imagined
+#> 5      0.3178937     0.4536711    imagined
+#> 6      0.3223118     0.4705083    imagined
+#> 7      0.3159033     0.4603504    imagined
+#> 8      0.3248285     0.4388826    imagined
+#> 9      0.3280234     0.4430937    imagined
+#> 10     0.3226074     0.4283027    imagined
 ```
 
 We fit the model and use extra constraints on the initial parameter
@@ -100,14 +101,14 @@ values to facilitate convergence (fitting can take a while).
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 200,
+    nsims = 500,
     error_function = "g2",
     method = "DEoptim",
-    model_version = "TMM",
-    lower_bounds = c(0, 0.25, 0.1, 1),
-    upper_bounds = c(2, 1.25, 0.6, 2),
-    initial_pop_constraints = TRUE,
-    maxit = 10
+    model_version = "TMM3",
+    lower_bounds = c(1, 0.25, 0.1),
+    upper_bounds = c(2, 1.25, 0.6),
+    initial_pop_constraints = FALSE,
+    maxit = 100
     )
 ```
 
@@ -116,17 +117,17 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  0.72471 0.50014 0.3022 1.26014 
-#> best value    :  0.14154 
-#> after         :  10 generations 
-#> fn evaluated  :  2288 times 
+#> best member   :  1.07338 0.4994 0.39119 
+#> best value    :  0.00408 
+#> after         :  100 generations 
+#> fn evaluated  :  20200 times 
 #> *************************************
 ```
 
 We can then plot the underlying (latent) function(s).
 
 ``` r
-plot(x = results, method = "latent", model_version = "TMM") +
+plot(x = results, method = "latent", model_version = "TMM3") +
     labs(title = "Example of latent activation function")
 ```
 
@@ -139,7 +140,7 @@ values.
 ``` r
 plot(
     x = results, original_data = simulated_data,
-    method = "ppc", model_version = "TMM", action_mode = "imagined"
+    method = "ppc", model_version = "TMM3", action_mode = "imagined"
     )
 ```
 

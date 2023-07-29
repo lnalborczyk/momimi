@@ -12,7 +12,7 @@
 #' @param amplitude_inhib Numeric, amplitude of the inhibition function.
 #' @param peak_time_inhib Numeric, peak time of the inhibition function.
 #' @param curvature_inhib Numeric, curvature of the inhibition function.
-#' @param model_version Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").
+#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
 #' @param time_step Numeric, time step used to numerical approximation.
@@ -48,7 +48,7 @@ model <- function (
         exec_threshold = 1, imag_threshold = 0.5,
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
-        model_version = c("TMM", "PIM"),
+        model_version = c("TMM3", "TMM4", "PIM"),
         uncertainty = c("par_specific", "brownian", "overall"),
         full_output = FALSE,
         time_step = 0.001
@@ -117,7 +117,7 @@ model <- function (
 
     } else if (full_output == FALSE) {
 
-        if (model_version == "TMM") {
+        if (model_version %in% c("TMM3", "TMM4") ) {
 
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (exec_threshold = 1,
@@ -133,9 +133,11 @@ model <- function (
                 curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
                 exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
 
-                # # no variability in the motor imagery threshold
-                # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
+                # no variability in the motor imagery threshold
                 imag_threshold_sim <- imag_threshold
+
+                # if only 3 pars, fixing the amplitude to some arbitrary value
+                # if (model_version == "TMM3") amplitude_sim <- 1.5
 
                 # computing the predicted RT and MT in imagery
                 onset_offset_imag <- onset_offset(

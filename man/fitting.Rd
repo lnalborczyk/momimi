@@ -14,7 +14,7 @@ fitting(
   nstudies = 200,
   initial_pop_constraints = FALSE,
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
-  model_version = c("TMM", "PIM"),
+  model_version = c("TMM3", "TMM4", "PIM"),
   method = c("SANN", "GenSA", "pso", "hydroPSO", "DEoptim", "Nelder-Mead", "BFGS",
     "L-BFGS-B", "bobyqa", "nlminb", "all_methods", "optimParallel"),
   maxit = 100,
@@ -40,7 +40,7 @@ fitting(
 
 \item{error_function}{Character, error function to be used when fitting the model.}
 
-\item{model_version}{Character, version of the model ("TMM" or "PIM").}
+\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
 
 \item{method}{Character, optimisation method (DEoptim seems to work best).}
 
@@ -56,7 +56,7 @@ Fitting the "threshold modulation model" (TMM) and the "parallel inhibition mode
 }
 \examples{
 \dontrun{
-plausible "true" parameter values in the TMM
+plausible "true" parameter values in the TMM (with 4 free parameters)
 true_pars <- c(1.1, 0.5, 0.3, 1.25)
 
 # simulating data using these parameter values
@@ -65,7 +65,7 @@ simulated_data <- simulating(
     nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined",
-    model_version = "TMM"
+    model_version = "TMM4"
     )
 
 # fitting the model
@@ -74,7 +74,7 @@ results <- fitting(
     nsims = 200,
     error_function = "g2",
     method = "DEoptim",
-    model_version = "TMM",
+    model_version = "TMM4",
     lower_bounds = c(0, 0.25, 0.1, 1),
     upper_bounds = c(2, 1.25, 0.6, 2),
     initial_pop_constraints = TRUE,

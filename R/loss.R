@@ -25,7 +25,7 @@ loss <- function (
         par, data,
         nsims = NULL,
         nsamples = 3000,
-        model_version = c("TMM", "PIM"),
+        model_version = c("TMM3", "TMM4", "PIM"),
         exec_threshold = 1, imag_threshold = 0.5,
         error_function = c("g2", "rmse", "sse", "wsse", "ks")
         ) {
@@ -45,20 +45,39 @@ loss <- function (
     if (is.null(nsims) ) nsims <- as.numeric(nrow(data) )
 
     # what version of the model?
-    if (model_version == "TMM") {
+    if (model_version %in% c("TMM3", "TMM4") ) {
 
-        # setting an arbitrary value for the amplitude of the activation function
-        amplitude_activ <- par[[1]]
+        if (model_version == "TMM3") {
 
-        # retrieving parameter values for the activation function
-        peak_time_activ <- log(par[[2]])
-        curvature_activ <- par[[3]]
+            # setting an arbitrary value for the amplitude of the activation function
+            amplitude_activ <- 1.5
 
-        # retrieving parameter values for the execution threshold
-        exec_threshold <- par[[4]] * amplitude_activ
+            # retrieving parameter values for the activation function
+            peak_time_activ <- log(par[[2]])
+            curvature_activ <- par[[3]]
 
-        # defining imagery threshold relative to execution threshold
-        imag_threshold <- imag_threshold * exec_threshold
+            # retrieving parameter values for the execution threshold
+            exec_threshold <- par[[1]] * amplitude_activ
+
+            # defining imagery threshold relative to execution threshold
+            imag_threshold <- imag_threshold * exec_threshold
+
+        } else if (model_version == "TMM4") {
+
+            # setting an arbitrary value for the amplitude of the activation function
+            amplitude_activ <- par[[1]]
+
+            # retrieving parameter values for the activation function
+            peak_time_activ <- log(par[[2]])
+            curvature_activ <- par[[3]]
+
+            # retrieving parameter values for the execution threshold
+            exec_threshold <- par[[4]] * amplitude_activ
+
+            # defining imagery threshold relative to execution threshold
+            imag_threshold <- imag_threshold * exec_threshold
+
+        }
 
         ################################################################################
         # adding some constraints

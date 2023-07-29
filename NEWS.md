@@ -1,3 +1,12 @@
 # momimi 0.0.1
 
-* Added a `NEWS.md` file to track changes to the package.
+* Adding a `NEWS.md` file to track changes.
+
+# momimi 0.0.2
+
+* Adding the 3-parameter version of TMM (free parameters are the motor execution threshold, the peak time, and the curvature).
+
+# momimi 0.0.3
+
+* Adding the possibility to include within-trial (diffusive) noise.
+* Fixing the 3-parameter version of the TMM (TMM3).
