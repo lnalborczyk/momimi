@@ -10,6 +10,7 @@ activation(
   peak_time = 0,
   curvature = 0.4,
   uncertainty = c("par_specific", "overall", "brownian"),
+  bw_noise = 0.01,
   diffusion_coef = 0.001,
   time_step = 0.001
 )
@@ -24,6 +25,8 @@ activation(
 \item{curvature}{Numeric, curvature of the activation function.}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
+
+\item{bw_noise}{Numeric, amount of between-trial noise.}
 
 \item{diffusion_coef}{Numeric, diffusion coefficient.}
 

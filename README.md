@@ -63,12 +63,15 @@ plot(x = simulated_data, method = "distributions")
 ### Fitting the models
 
 We can also use the model to generate realistic data from known
-parameter values and then fit the model to these data to try recovering
-the original parameter values.
+parameter values and then fit the model (below, the 3-parameter version
+of the TMM with between-trial noise) to these data to try recovering the
+original parameter values.
 
 ``` r
-# plausible "true" parameter values in the TMM
-true_pars <- c(1.1, 0.5, 0.4)
+# plausible "true" parameter values in the TMM3
+# parameters are the relative motor execution threshold, the peak time,
+# the curvature, and the amount of between-trial variability in these parameters
+true_pars <- c(1.1, 0.5, 0.4, 0.09)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
@@ -82,16 +85,16 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3262840     0.4374406    imagined
-#> 2      0.3274168     0.4519233    imagined
-#> 3      0.3267344     0.4614515    imagined
-#> 4      0.3232280     0.4471685    imagined
-#> 5      0.3203946     0.4689087    imagined
-#> 6      0.3224046     0.4295186    imagined
-#> 7      0.3205554     0.4621102    imagined
-#> 8      0.3293901     0.4461382    imagined
-#> 9      0.3304811     0.4564168    imagined
-#> 10     0.3278175     0.4442933    imagined
+#> 1      0.3734974     0.3419453    imagined
+#> 2      0.3384389     0.4264322    imagined
+#> 3      0.3187306     0.3962659    imagined
+#> 4      0.2825681     0.5340468    imagined
+#> 5      0.2805505     0.4946869    imagined
+#> 6      0.3735362     0.3896149    imagined
+#> 7      0.3624000     0.3090295    imagined
+#> 8      0.3355910     0.4103024    imagined
+#> 9      0.3137004     0.4495373    imagined
+#> 10     0.3323192     0.4944549    imagined
 ```
 
 We fit the model and use extra constraints on the initial parameter
@@ -105,8 +108,8 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1),
-    upper_bounds = c(2, 1.25, 0.6),
+    lower_bounds = c(1, 0.25, 0.1, 0.05),
+    upper_bounds = c(2, 1.25, 0.6, 0.35),
     initial_pop_constraints = TRUE,
     maxit = 100
     )
@@ -117,14 +120,15 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.09076 0.49981 0.39729 
-#> best value    :  0.00685 
+#> best member   :  1.02639 0.50047 0.38425 0.08679 
+#> best value    :  0.00977 
 #> after         :  100 generations 
-#> fn evaluated  :  22220 times 
+#> fn evaluated  :  21917 times 
 #> *************************************
 ```
 
-We can then plot the underlying (latent) function(s).
+We can then plot the underlying (latent) function(s). Note that this
+returns a `ggplot2` object that can be subsequently modified.
 
 ``` r
 plot(x = results, method = "latent", model_version = "TMM3") +
@@ -133,7 +137,7 @@ plot(x = results, method = "latent", model_version = "TMM3") +
 
 <img src="man/figures/README-latent-1.png" width="75%" />
 
-We can also do predictive checks by comparing the data used to fit the
+We can also do “predictive checks” by comparing the data used to fit the
 model to data simulated from the model using the estimated parameter
 values.
 
@@ -147,7 +151,8 @@ plot(
 <img src="man/figures/README-ppc-1.png" width="75%" />
 
 We can also visualise the trajectory in parameter space during
-optimisation interactively using `plotly` (not shown below).
+optimisation interactively using `plotly` (not shown below, but you
+should try this).
 
 ``` r
 plot(x = results, method = "optimisation")

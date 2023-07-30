@@ -12,6 +12,7 @@
 #' @param amplitude_inhib Numeric, amplitude of the inhibition function.
 #' @param peak_time_inhib Numeric, peak time of the inhibition function.
 #' @param curvature_inhib Numeric, curvature of the inhibition function.
+#' @param bw_noise Numeric, amount of between-trial noise.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
@@ -48,6 +49,7 @@ model <- function (
         exec_threshold = 1, imag_threshold = 0.5,
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
+        bw_noise = NULL,
         model_version = c("TMM3", "TMM4", "PIM"),
         uncertainty = c("par_specific", "brownian", "overall"),
         full_output = FALSE,
@@ -64,6 +66,9 @@ model <- function (
 
     # uncertainty should be one of above
     uncertainty <- match.arg(uncertainty)
+
+    # defining/retrieving the amount of between-trial noise (if any)
+    bw_noise <- ifelse(test = is.null(bw_noise), yes = 0.01, no = bw_noise)
 
     # if full_output = TRUE, returns the full activation, inhibition,
     # and balance functions
@@ -123,17 +128,18 @@ model <- function (
             activation_function <- function (exec_threshold = 1,
                                              imag_threshold = 0.5,
                                              amplitude = 1.5, peak_time = 0,
-                                             curvature = 0.4
+                                             curvature = 0.4, bw_noise = 0.01
                                              ) {
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
-                peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
-                curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
-                exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+                amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
+                peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
+                curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
                 # no variability in the motor imagery threshold
+                # exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
+                exec_threshold_sim <- exec_threshold
                 imag_threshold_sim <- imag_threshold
 
                 # if only 3 pars, fixing the amplitude to some arbitrary value
@@ -182,6 +188,7 @@ model <- function (
                             amplitude = amplitude_activ,
                             peak_time = peak_time_activ,
                             curvature = curvature_activ,
+                            bw_noise = bw_noise,
                             exec_threshold = .data$exec_threshold,
                             imag_threshold = .data$imag_threshold
                             )
@@ -196,18 +203,19 @@ model <- function (
             balance_function <- function (
             exec_threshold = 1, imag_threshold = 0.5,
             amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
-            amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6
+            amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
+            bw_noise = 0.01
             ) {
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
-                peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
-                curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = 0.01)
+                amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = bw_noise)
+                peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = bw_noise)
+                curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = bw_noise)
 
-                amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
-                peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
-                curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
+                amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = bw_noise)
+                peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = bw_noise)
+                curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = bw_noise)
 
                 # computing the predicted RT and MT in imagery
                 onset_offset_imag <- onset_offset(

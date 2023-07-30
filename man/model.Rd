@@ -15,6 +15,7 @@ model(
   amplitude_inhib = 1.5,
   peak_time_inhib = 0,
   curvature_inhib = 0.6,
+  bw_noise = NULL,
   model_version = c("TMM3", "TMM4", "PIM"),
   uncertainty = c("par_specific", "brownian", "overall"),
   full_output = FALSE,
@@ -41,6 +42,8 @@ model(
 \item{peak_time_inhib}{Numeric, peak time of the inhibition function.}
 
 \item{curvature_inhib}{Numeric, curvature of the inhibition function.}
+
+\item{bw_noise}{Numeric, amount of between-trial noise.}
 
 \item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
 

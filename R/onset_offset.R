@@ -28,8 +28,7 @@
 onset_offset <- function (
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
-        thresh,
-        model_version = c("TMM3", "TMM4", "PIM")
+        thresh, model_version = c("TMM3", "TMM4", "PIM")
         ) {
 
     # model_version should be one of above

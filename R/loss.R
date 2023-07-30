@@ -56,11 +56,17 @@ loss <- function (
             peak_time_activ <- log(par[[2]])
             curvature_activ <- par[[3]]
 
+            # trying out the normalised lognormal distribution
+            # amplitude_activ <- 1 / (peak_time_activ * curvature_activ * sqrt(2 * pi) )
+
             # retrieving parameter values for the execution threshold
             exec_threshold <- par[[1]] * amplitude_activ
 
             # defining imagery threshold relative to execution threshold
             imag_threshold <- imag_threshold * exec_threshold
+
+            # retrieving the amount of between-trial noise
+            bw_noise <- par[[4]]
 
         } else if (model_version == "TMM4") {
 
@@ -97,10 +103,15 @@ loss <- function (
 
             # adding some variability in the other parameters
             # variability is currently fixed but could also be estimated
-            amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
-            peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
-            curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
-            exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+            amplitude_sim <- amplitude
+            # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
+            # peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
+            # curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
+            # exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+            # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
+            peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
+            curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
+            exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
 
             # no variability in the motor imagery threshold
             # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)

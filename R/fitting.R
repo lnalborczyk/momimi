@@ -78,7 +78,8 @@ fitting <- function (
 
         if (model_version == "TMM3") {
 
-            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
+            # par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
+            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
 
          } else if (model_version == "TMM4") {
 
@@ -361,7 +362,8 @@ plot.DEoptim_momimi <- function (
 
         if (model_version == "TMM3") {
 
-            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
+            # par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
+            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
@@ -386,17 +388,25 @@ plot.DEoptim_momimi <- function (
                         )
                     ) +
                 # plotting the motor execution and motor imagery thresholds
-                geomtextpath::geom_labelhline(
+                # geomtextpath::geom_labelhline(
+                #     yintercept = estimated_pars[1] * 1.5,
+                #     linetype = 2,
+                #     hjust = 0.6,
+                #     label = "Motor execution threshold"
+                #     ) +
+                # geomtextpath::geom_labelhline(
+                #     yintercept = 0.5 * estimated_pars[1] * 1.5,
+                #     linetype = 2,
+                #     hjust = 0.6,
+                #     label = "Motor imagery threshold"
+                #     ) +
+                ggplot2::geom_hline(
                     yintercept = estimated_pars[1] * 1.5,
-                    linetype = 2,
-                    hjust = 0.6,
-                    label = "Motor execution threshold"
+                    linetype = 2
                     ) +
-                geomtextpath::geom_labelhline(
+                ggplot2::geom_hline(
                     yintercept = 0.5 * estimated_pars[1] * 1.5,
-                    linetype = 2,
-                    hjust = 0.6,
-                    label = "Motor imagery threshold"
+                    linetype = 2
                     ) +
                 # plotting average
                 ggplot2::stat_summary(
@@ -449,17 +459,25 @@ plot.DEoptim_momimi <- function (
                         )
                     ) +
                 # plotting the motor execution and motor imagery thresholds
-                geomtextpath::geom_labelhline(
-                    yintercept = estimated_pars[4] * estimated_pars[1],
-                    linetype = 2,
-                    hjust = 0.6,
-                    label = "Motor execution threshold"
+                # geomtextpath::geom_labelhline(
+                #     yintercept = estimated_pars[4] * estimated_pars[1],
+                #     linetype = 2,
+                #     hjust = 0.6,
+                #     label = "Motor execution threshold"
+                #     ) +
+                # geomtextpath::geom_labelhline(
+                #     yintercept = 0.5 * estimated_pars[4] * estimated_pars[1],
+                #     linetype = 2,
+                #     hjust = 0.6,
+                #     label = "Motor imagery threshold"
+                #     ) +
+                ggplot2::geom_hline(
+                    yintercept = estimated_pars[1] * estimated_pars[4],
+                    linetype = 2
                     ) +
-                geomtextpath::geom_labelhline(
+                ggplot2::geom_hline(
                     yintercept = 0.5 * estimated_pars[4] * estimated_pars[1],
-                    linetype = 2,
-                    hjust = 0.6,
-                    label = "Motor imagery threshold"
+                    linetype = 2
                     ) +
                 # plotting average
                 ggplot2::stat_summary(
@@ -515,6 +533,7 @@ plot.DEoptim_momimi <- function (
                         colour = .data$name
                         )
                     ) +
+                # plotting thresholds
                 ggplot2::geom_hline(yintercept = 1, linetype = 2) +
                 ggplot2::geom_hline(yintercept = 0.5, linetype = 2) +
                 # plotting average

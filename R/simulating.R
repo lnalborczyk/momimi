@@ -64,6 +64,7 @@ simulating <- function (
             amplitude_activ = 1.5,
             peak_time_activ = log(true_pars[2]),
             curvature_activ = true_pars[3],
+            bw_noise = true_pars[4],
             model_version = model_version,
             full_output = FALSE
             ) %>%
@@ -135,6 +136,8 @@ simulating <- function (
     return (results)
 
 }
+
+#' @export
 
 plot.momimi_sim <- function (x, ...) {
 

@@ -68,18 +68,20 @@ generating_initialpop <- function (
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (
         exec_threshold = 1, imag_threshold = 0.5,
-        amplitude = 1.5, peak_time = 0, curvature = 0.4
+        amplitude = 1.5, peak_time = 0, curvature = 0.4,
+        bw_noise = 0.01
         ) {
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_sim <- rnorm(n = 1, mean = amplitude, sd = 0.01)
-                peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = 0.01)
-                curvature_sim <- rnorm(n = 1, mean = curvature, sd = 0.01)
-                exec_threshold_sim <- rnorm(n = 1, mean = exec_threshold, sd = 0.01)
+                amplitude_sim <- rnorm(n = 1, mean = amplitude, sd = bw_noise)
+                peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = bw_noise)
+                curvature_sim <- rnorm(n = 1, mean = curvature, sd = bw_noise)
 
                 # # no variability in the motor imagery threshold
                 # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
+                # exec_threshold_sim <- rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
+                exec_threshold_sim <- exec_threshold
                 imag_threshold_sim <- imag_threshold
 
                 # computing the predicted RT and MT in imagery
@@ -124,7 +126,8 @@ generating_initialpop <- function (
                                 imag_threshold = 0.5 * .data$exec_threshold * 1.5,
                                 amplitude = 1.5,
                                 peak_time = log(.data$peak_time_activ),
-                                curvature = .data$curvature_activ
+                                curvature = .data$curvature_activ,
+                                bw_noise = .data$bw_noise
                                 )
                             )
                         )

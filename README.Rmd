@@ -63,11 +63,13 @@ plot(x = simulated_data, method = "distributions")
 
 ### Fitting the models
 
-We can also use the model to generate realistic data from known parameter values and then fit the model to these data to try recovering the original parameter values.
+We can also use the model to generate realistic data from known parameter values and then fit the model (below, the 3-parameter version of the TMM with between-trial noise) to these data to try recovering the original parameter values.
 
 ```{r simulating2}
-# plausible "true" parameter values in the TMM
-true_pars <- c(1.1, 0.5, 0.4)
+# plausible "true" parameter values in the TMM3
+# parameters are the relative motor execution threshold, the peak time,
+# the curvature, and the amount of between-trial variability in these parameters
+true_pars <- c(1.1, 0.5, 0.4, 0.09)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
@@ -92,8 +94,8 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1),
-    upper_bounds = c(2, 1.25, 0.6),
+    lower_bounds = c(1, 0.25, 0.1, 0.05),
+    upper_bounds = c(2, 1.25, 0.6, 0.35),
     initial_pop_constraints = TRUE,
     maxit = 100
     )
@@ -104,14 +106,14 @@ results <- fitting(
 summary(results)
 ```
 
-We can then plot the underlying (latent) function(s).
+We can then plot the underlying (latent) function(s). Note that this returns a `ggplot2` object that can be subsequently modified.
 
 ```{r latent}
 plot(x = results, method = "latent", model_version = "TMM3") +
     labs(title = "Example of latent activation function")
 ```
 
-We can also do predictive checks by comparing the data used to fit the model to data simulated from the model using the estimated parameter values.
+We can also do "predictive checks" by comparing the data used to fit the model to data simulated from the model using the estimated parameter values.
 
 ```{r ppc}
 plot(
@@ -120,7 +122,7 @@ plot(
     )
 ```
 
-We can also visualise the trajectory in parameter space during optimisation interactively using `plotly` (not shown below).
+We can also visualise the trajectory in parameter space during optimisation interactively using `plotly` (not shown below, but you should try this).
 
 ```{r optimisation, eval = FALSE}
 plot(x = results, method = "optimisation")
