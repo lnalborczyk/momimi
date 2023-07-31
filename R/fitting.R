@@ -224,7 +224,8 @@ fitting <- function (
                 steptol = 1000,
                 # using all available cores
                 parallelType = "parallel",
-                packages = c("DEoptim", "tidyverse", "tgp", "momimi")
+                # packages = c("DEoptim", "tidyverse", "tgp", "momimi")
+                packages = c("DEoptim", "dplyr", "tidyr", "tgp", "momimi")
                 )
             )
 
