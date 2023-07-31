@@ -59,8 +59,10 @@ simulating <- function (
         results <- model(
             nsims = nsims,
             nsamples = nsamples,
-            exec_threshold = true_pars[1] * 1.5,
-            imag_threshold = 0.5 * true_pars[1] * 1.5,
+            # exec_threshold = true_pars[1] * 1.5,
+            exec_threshold = true_pars[1],
+            # imag_threshold = 0.5 * true_pars[1] * 1.5,
+            imag_threshold = 0.5 * true_pars[1],
             amplitude_activ = 1.5,
             peak_time_activ = log(true_pars[2]),
             curvature_activ = true_pars[3],

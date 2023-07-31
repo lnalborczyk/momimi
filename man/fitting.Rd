@@ -15,8 +15,8 @@ fitting(
   initial_pop_constraints = FALSE,
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
   model_version = c("TMM3", "TMM4", "PIM"),
-  method = c("SANN", "GenSA", "pso", "hydroPSO", "DEoptim", "Nelder-Mead", "BFGS",
-    "L-BFGS-B", "bobyqa", "nlminb", "all_methods", "optimParallel"),
+  method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
+    "bobyqa", "nlminb", "all_methods", "optimParallel"),
   maxit = 100,
   verbose = TRUE
 )

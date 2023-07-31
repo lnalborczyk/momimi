@@ -11,7 +11,7 @@ activation(
   curvature = 0.4,
   uncertainty = c("par_specific", "overall", "brownian"),
   bw_noise = 0.01,
-  diffusion_coef = 0.001,
+  diffusion_coef = 0.01,
   time_step = 0.001
 )
 }

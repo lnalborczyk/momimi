@@ -1,7 +1,7 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
 Version: 0.0.4
-Date: 2023-07-30
+Date: 2023-07-31
 Authors@R: 
     c(
     person(
@@ -25,9 +25,7 @@ Imports:
     dplyr,
     DEoptim,
     GenSA,
-    geomtextpath,
     ggplot2,
-    hydroPSO,
     optimParallel,
     optimx,
     magrittr,
@@ -37,10 +35,11 @@ Imports:
     rlang,
     stringr,
     tgp,
-    tidyr,
-    plotly
-Suggests: 
+    tidyr
+Suggests:
+    geomtextpath,
     knitr,
+    plotly,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

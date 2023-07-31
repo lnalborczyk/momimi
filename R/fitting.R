@@ -66,7 +66,7 @@ fitting <- function (
         error_function = c("g2", "rmse", "sse", "wsse", "ks"),
         model_version = c("TMM3", "TMM4", "PIM"),
         method = c(
-            "SANN", "GenSA", "pso", "hydroPSO", "DEoptim",
+            "SANN", "GenSA", "pso", "DEoptim",
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
             "all_methods", "optimParallel"
             ),
@@ -78,7 +78,6 @@ fitting <- function (
 
         if (model_version == "TMM3") {
 
-            # par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
             par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
 
          } else if (model_version == "TMM4") {
@@ -145,24 +144,6 @@ fitting <- function (
             lower = lower_bounds,
             upper = upper_bounds,
             control = list(maxit = maxit, trace = 2, trace.stats = TRUE)
-            )
-
-    } else if (method == "hydroPSO") {
-
-        fit <- hydroPSO::hydroPSO(
-            fn = loss,
-            data = data,
-            nsims = nsims,
-            error_function = error_function,
-            par = par,
-            lower = lower_bounds,
-            upper = upper_bounds,
-            control = list(
-                maxit = maxit,
-                verbose = TRUE,
-                # using all available cores
-                parallel = "parallel"
-                )
             )
 
     } else if (method == "DEoptim") {
@@ -362,8 +343,7 @@ plot.DEoptim_momimi <- function (
 
         if (model_version == "TMM3") {
 
-            # par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
-            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
+            par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
@@ -434,7 +414,7 @@ plot.DEoptim_momimi <- function (
 
         } else if (model_version == "TMM4") {
 
-            par_names <- c("amplitude_activ", "peak_time_activ", "curvature_activ", "exec_threshold")
+            par_names <- c("amplitude", "peak_time", "curvature", "exec_threshold")
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
@@ -567,37 +547,6 @@ plot.DEoptim_momimi <- function (
         # plotting optimisation paths in parameter space
         optimisation_results <- data.frame(x$member$bestmemit) %>%
             dplyr::mutate(iteration = 1:nrow(.) )
-
-        # plotting in 2D
-        # optimisation_results %>%
-        #     dplyr::distinct() %>%
-        #     ggplot2::ggplot(ggplot2::aes(x = par1, y = par2, color = iteration) ) +
-        #     ggplot2::geom_point(show.legend = FALSE) +
-        #     ggplot2::geom_path(show.legend = FALSE) +
-        #     ggplot2::geom_point(
-        #         data = data.frame(par1 = true_pars[1], par2 = true_pars[2], par3 = true_pars[3]),
-        #         aes(x = par1, y = par2),
-        #         shape = "+",
-        #         colour = "red",
-        #         size = 10,
-        #         inherit.aes = FALSE,
-        #         show.legend = FALSE
-        #         ) +
-        #     ggplot2::theme_bw(base_size = 10, base_family = "Open Sans") +
-        #     ggplot2::labs(x = "Parameter 1", y = "Parameter 2")
-
-        # static 3D plot
-        # plot3D::scatter3D(
-        #     x = optimisation_results$par1, y = optimisation_results$par2,
-        #     z = optimisation_results$par3, colvar = optimisation_results$iteration,
-        #     phi = 20, bty = "b2", colkey = FALSE,
-        #     col = terrain.colors(100),
-        #     pch = 19, cex = 1,
-        #     xlab = "Parameter 1", ylab = "Parameter 2", zlab = "Parameter 3",
-        #     xlim = range(optimisation_results$par1),
-        #     ylim = range(optimisation_results$par2),
-        #     zlim = range(optimisation_results$par3)
-        #     )
 
         # dynamic 3D plot
         plotly::plot_ly(

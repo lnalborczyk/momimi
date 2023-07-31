@@ -50,7 +50,8 @@ loss <- function (
         if (model_version == "TMM3") {
 
             # setting an arbitrary value for the amplitude of the activation function
-            amplitude_activ <- 1.5
+            # amplitude_activ <- 1.5
+            amplitude_activ <- 1
 
             # retrieving parameter values for the activation function
             peak_time_activ <- log(par[[2]])
@@ -101,20 +102,13 @@ loss <- function (
         amplitude = 1.5, peak_time = 0, curvature = 0.4
         ) {
 
-            # adding some variability in the other parameters
-            # variability is currently fixed but could also be estimated
-            amplitude_sim <- amplitude
-            # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = 0.01)
-            # peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = 0.01)
-            # curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = 0.01)
-            # exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = 0.01)
-            # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
+            # adding some variability in the parameters
+            amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
             peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
             curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
-            exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
 
-            # no variability in the motor imagery threshold
-            # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
+            # no variability in the motor execution and motor imagery thresholds
+            exec_threshold_sim <- exec_threshold
             imag_threshold_sim <- imag_threshold
 
             # computing the predicted RT and MT in imagery
@@ -222,7 +216,8 @@ loss <- function (
         imag_threshold <- imag_threshold * exec_threshold
 
         # setting an arbitrary value for the amplitude of the activation function
-        amplitude_activ <- 1.5
+        # amplitude_activ <- 1.5
+        amplitude_activ <- 1
 
         # retrieving parameter values for the activation function
         peak_time_activ <- log(par[[2]])

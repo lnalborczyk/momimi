@@ -36,7 +36,7 @@ activation <- function (
         time = 0,
         amplitude = 1.5, peak_time = 0, curvature = 0.4,
         uncertainty = c("par_specific", "overall", "brownian"),
-        bw_noise = 0.01, diffusion_coef = 0.001, time_step = 0.001
+        bw_noise = 0.01, diffusion_coef = 0.01, time_step = 0.001
         ) {
 
     # uncertainty should be one of above

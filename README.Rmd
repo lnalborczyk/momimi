@@ -97,7 +97,7 @@ results <- fitting(
     lower_bounds = c(1, 0.25, 0.1, 0.05),
     upper_bounds = c(2, 1.25, 0.6, 0.35),
     initial_pop_constraints = TRUE,
-    maxit = 100
+    maxit = 20
     )
 ```
 
