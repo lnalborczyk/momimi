@@ -28,7 +28,8 @@ loss <- function (
         nsims = NULL,
         nsamples = 3000,
         model_version = c("TMM3", "TMM4", "PIM"),
-        exec_threshold = 1, imag_threshold = 0.5,
+        exec_threshold = 1,
+        imag_threshold = 0.5,
         uncertainty = c("par_level", "func_level", "diffusion"),
         time_step = 0.001,
         error_function = c("g2", "rmse", "sse", "wsse", "ks")
@@ -167,8 +168,7 @@ loss <- function (
             # computing the activation/inhibition balance and
             # implied distributions of RTs and MTs per simulation
             predicted_rt_mt <- data.frame(
-                sample = rep(1:nsamples, nsims),
-                time = rep(1:nsamples, nsims) * time_step,
+                time = 1:nsamples * time_step,
                 exec_threshold = exec_threshold,
                 imag_threshold = imag_threshold
                 ) %>%
@@ -193,7 +193,8 @@ loss <- function (
                 dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
                 # convert from ms to seconds
                 dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
-                dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec)
+                dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
+                dplyr::distinct()
 
         }
 
@@ -306,8 +307,7 @@ loss <- function (
         imag_threshold <- imag_threshold * exec_threshold
 
         # setting an arbitrary value for the amplitude of the activation function
-        # amplitude_activ <- 1.5
-        amplitude_activ <- 1
+        amplitude_activ <- 1.5
 
         # retrieving parameter values for the activation function
         peak_time_activ <- log(par[[2]])
@@ -336,18 +336,19 @@ loss <- function (
         balance_function <- function (
         exec_threshold = 1, imag_threshold = 0.5,
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
-        amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6
+        amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
+        bw_noise = 0.1
         ) {
 
             # adding some variability in the other parameters
             # variability is currently fixed but could also be estimated
-            amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
-            peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
-            curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = 0.01)
+            amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = bw_noise)
+            peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = bw_noise)
+            curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = bw_noise)
 
-            amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
-            peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
-            curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
+            amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = bw_noise)
+            peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = bw_noise)
+            curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = bw_noise)
 
             # in this model, there is no variation in the thresholds
             exec_threshold_sim <- exec_threshold

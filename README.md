@@ -13,7 +13,8 @@ utilities.
 
 ## Installation
 
-You can install the development version from GitHub with:
+You can install the latest stable version of the package from GitHub
+with:
 
 ``` r
 # install.packages("devtools")
@@ -83,16 +84,16 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.2821749     0.4949520    imagined
-#> 2      0.2855236     0.5497045    imagined
-#> 3      0.2864442     0.5486463    imagined
-#> 4      0.2806148     0.5910662    imagined
-#> 5      0.3266776     0.3458174    imagined
-#> 6      0.3373657     0.6269203    imagined
-#> 7      0.3113755     0.4611417    imagined
-#> 8      0.3176015     0.4394147    imagined
-#> 9      0.3949242     0.2541443    imagined
-#> 10     0.3513707     0.3120009    imagined
+#> 1      0.3467196     0.3468904    imagined
+#> 2      0.3225490     0.4754676    imagined
+#> 3      0.3149780     0.6991953    imagined
+#> 4      0.2853013     0.7058372    imagined
+#> 5      0.2950119     0.3818491    imagined
+#> 6      0.3248526     0.4045011    imagined
+#> 7      0.4005530     0.5672460    imagined
+#> 8      0.3181484     0.4462748    imagined
+#> 9      0.2860371     0.3530964    imagined
+#> 10     0.3672168     0.4728014    imagined
 ```
 
 We fit the model and use realistic constraints (e.g., the RT/MT should
@@ -120,10 +121,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.31022 0.50973 0.48866 
-#> best value    :  0.0095 
+#> best member   :  1.01658 0.50823 0.38563 
+#> best value    :  0.01212 
 #> after         :  100 generations 
-#> fn evaluated  :  23230 times 
+#> fn evaluated  :  23129 times 
 #> *************************************
 ```
 
@@ -174,7 +175,7 @@ plot(x = results, method = "optimisation")
 
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X.
 (in preparation). Modelling the onset and duration of imagined actions:
-A novel algorithmic model of motor imagery.
+Assessing a novel algorithmic model of motor imagery.
 
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X.
 (under review). Towards formal models of inhibitory mechanisms involved

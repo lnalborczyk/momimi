@@ -66,18 +66,14 @@ simulating <- function (
         results <- model(
             nsims = nsims,
             nsamples = nsamples,
-            # exec_threshold = true_pars[1] * 1.5,
             exec_threshold = true_pars[1],
-            # imag_threshold = 0.5 * true_pars[1] * 1.5,
             imag_threshold = 0.5 * true_pars[1],
-            # amplitude_activ = 1.5,
             amplitude_activ = 1,
             peak_time_activ = log(true_pars[2]),
             curvature_activ = true_pars[3],
-            # bw_noise = true_pars[4],
-            bw_noise = 0.1,
             model_version = model_version,
             uncertainty = uncertainty,
+            bw_noise = 0.1,
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%

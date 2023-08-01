@@ -9,6 +9,7 @@
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
+#' @param time_step Numeric, time step used to numerical approximation.
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param verbose Boolean, whether to print progress during fitting.
@@ -28,6 +29,7 @@ generating_initialpop <- function (
         par_names, lower_bounds, upper_bounds,
         model_version = c("TMM3", "TMM4", "PIM"),
         uncertainty = c("par_level", "func_level", "diffusion"),
+        time_step = 0.001,
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         verbose = TRUE
         ) {
@@ -72,10 +74,10 @@ generating_initialpop <- function (
 
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (
-        exec_threshold = 1, imag_threshold = 0.5,
-        amplitude = 1.5, peak_time = 0, curvature = 0.4,
-        bw_noise = 0.1
-        ) {
+                exec_threshold = 1, imag_threshold = 0.5,
+                amplitude = 1.5, peak_time = 0, curvature = 0.4,
+                bw_noise = 0.1
+                ) {
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
@@ -140,35 +142,45 @@ generating_initialpop <- function (
                 } else {
 
                     # computing the activation/inhibition balance and
-                    # implied distributions of RTs and MTs per simulation
-                    # predicted_rt_mt <- data.frame(
-                    #     sample = rep(1:nsamples, nsims),
-                    #     time = rep(1:nsamples, nsims) * time_step,
-                    #     exec_threshold = exec_threshold,
-                    #     imag_threshold = imag_threshold
-                    #     ) %>%
-                    #     dplyr::mutate(
-                    #         activation = activation(
-                    #             time = .data$time,
-                    #             amplitude = amplitude_activ,
-                    #             peak_time = peak_time_activ,
-                    #             curvature = curvature_activ,
-                    #             uncertainty = uncertainty,
-                    #             bw_noise = bw_noise,
-                    #             time_step = time_step
-                    #             )
-                    #         ) %>%
-                    #     # numerically finding the balance's onset (RT) and offset
-                    #     dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
-                    #     dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
-                    #     # MT is defined as offset minus onset
-                    #     dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-                    #     dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
-                    #     dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
-                    #     dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
-                    #     # convert from ms to seconds
-                    #     dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
-                    #     dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec)
+                    # implied distributions of RTs and MTs
+                    rt_mt <- function (input_pars) {
+
+                        data.frame(
+                            sample = 1:3000,
+                            time = 1:3000 * time_step,
+                            exec_threshold = input_pars$exec_threshold,
+                            imag_threshold = 0.5 * input_pars$exec_threshold
+                            ) %>%
+                        dplyr::mutate(
+                            activation = activation(
+                                time = .data$time,
+                                amplitude = 1,
+                                peak_time = input_pars$peak_time_activ,
+                                curvature = input_pars$curvature_activ,
+                                uncertainty = uncertainty,
+                                bw_noise = 0.1,
+                                time_step = time_step
+                                )
+                            ) %>%
+                        # numerically finding the balance's onset (RT) and offset
+                        dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
+                        dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+                        # MT is defined as offset minus onset
+                        dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
+                        dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
+                        dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+                        dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
+                        # convert from ms to seconds
+                        dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
+                        dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
+                        dplyr::distinct()
+
+                    }
+
+                    # applying this function to each line of lhs_pars
+                    predicted_rt_mt <- lhs_pars %>%
+                        dplyr::rowwise() %>%
+                        dplyr::do(suppressWarnings(rt_mt(.) ) )
 
                 }
 
