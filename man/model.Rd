@@ -17,7 +17,7 @@ model(
   curvature_inhib = 0.6,
   bw_noise = NULL,
   model_version = c("TMM3", "TMM4", "PIM"),
-  uncertainty = c("par_specific", "brownian", "overall"),
+  uncertainty = c("par_level", "func_level", "diffusion"),
   full_output = FALSE,
   time_step = 0.001
 )

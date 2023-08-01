@@ -11,6 +11,7 @@ generating_initialpop(
   lower_bounds,
   upper_bounds,
   model_version = c("TMM3", "TMM4", "PIM"),
+  uncertainty = c("par_level", "func_level", "diffusion"),
   rt_contraints = c(0.1, 2),
   mt_contraints = c(0.1, 2),
   verbose = TRUE
@@ -28,6 +29,8 @@ generating_initialpop(
 \item{upper_bounds}{Numeric, vector of upper bounds for parameters.}
 
 \item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{rt_contraints}{Numeric, vector of length 2 specifying the min and max RT (in seconds).}
 

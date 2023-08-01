@@ -9,9 +9,9 @@ activation(
   amplitude = 1.5,
   peak_time = 0,
   curvature = 0.4,
-  uncertainty = c("par_specific", "overall", "brownian"),
-  bw_noise = 0.01,
-  diffusion_coef = 0.01,
+  uncertainty = c("par_level", "func_level", "diffusion"),
+  bw_noise = 0.1,
+  diffusion_coef = 0.001,
   time_step = 0.001
 )
 }

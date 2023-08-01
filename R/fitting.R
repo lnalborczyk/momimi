@@ -12,6 +12,7 @@
 #' @param initial_pop_constraints Boolean, whether to use additional constraints when sampling initial parameter values.
 #' @param error_function Character, error function to be used when fitting the model.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param method Character, optimisation method (DEoptim seems to work best).
 #' @param maxit Numeric, maximum number of iterations.
 #' @param verbose Boolean, whether to print progress during fitting.
@@ -65,6 +66,7 @@ fitting <- function (
         initial_pop_constraints = FALSE,
         error_function = c("g2", "rmse", "sse", "wsse", "ks"),
         model_version = c("TMM3", "TMM4", "PIM"),
+        uncertainty = c("par_level", "func_level", "diffusion"),
         method = c(
             "SANN", "GenSA", "pso", "DEoptim",
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
@@ -78,11 +80,11 @@ fitting <- function (
 
         if (model_version == "TMM3") {
 
-            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
+            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
 
          } else if (model_version == "TMM4") {
 
-            par_names <- c("amplitude_activ", "peak_time_activ", "curvature_activ", "exec_threshold")
+             par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
 
         } else if (model_version == "PIM") {
 
@@ -108,6 +110,9 @@ fitting <- function (
     # model_version should be one of above
     model_version <- match.arg(model_version)
 
+    # uncertainty should be one of above
+    uncertainty <- match.arg(uncertainty)
+
     if (method == "SANN") {
 
         fit <- stats::optim(
@@ -116,6 +121,8 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             method = method,
             control = list(maxit = maxit, trace = 2)
             )
@@ -127,6 +134,8 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             par = par,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -141,6 +150,8 @@ fitting <- function (
             par = par,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
             control = list(maxit = maxit, trace = 2, trace.stats = TRUE)
@@ -156,7 +167,8 @@ fitting <- function (
                 action_mode = unique(data$action_mode),
                 par_names = par_names,
                 lower_bounds = lower_bounds, upper_bounds = upper_bounds,
-                model_version = model_version
+                model_version = model_version,
+                uncertainty = uncertainty
                 )
 
         } else {
@@ -183,6 +195,7 @@ fitting <- function (
             nsims = nsims,
             error_function = error_function,
             model_version = model_version,
+            uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
             control = DEoptim::DEoptim.control(
@@ -240,6 +253,8 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             method = method,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -254,6 +269,8 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
             control = list(maxit = maxit, trace = 2, all.methods = TRUE)
@@ -280,6 +297,8 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
+            model_version = model_version,
+            uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
             verbose = TRUE
@@ -298,16 +317,18 @@ fitting <- function (
 
 plot.DEoptim_momimi <- function (
         x, original_data,
-        method = c("ppc", "latent", "optimisation"),
+        method = c("ppc", "quantiles", "latent", "optimisation"),
         action_mode = c("executed", "imagined"),
         model_version = c("TMM3", "TMM4", "PIM"),
+        uncertainty = c("par_level", "func_level", "diffusion"),
         ...
         ) {
 
-    # some tests
+    # matching arguments
     method <- match.arg(method)
     action_mode <- match.arg(action_mode)
     model_version <- match.arg(model_version)
+    uncertainty <- match.arg(uncertainty)
 
     # retrieving estimated pars
     estimated_pars <- as.numeric(x$optim$bestmem)
@@ -316,11 +337,12 @@ plot.DEoptim_momimi <- function (
 
         # simulating data using these parameter values
         simulating(
-            nsims = 200,
-            nsamples = 2000,
+            nsims = 500,
+            nsamples = 3000,
             true_pars = estimated_pars,
             action_mode = action_mode,
-            model_version = model_version
+            model_version = model_version,
+            uncertainty = uncertainty
             ) %>%
             # removing NAs or aberrant simulated data
             stats::na.omit() %>%
@@ -340,11 +362,58 @@ plot.DEoptim_momimi <- function (
                 x = "Reaction/Movement time (in seconds)", y = "Probability density"
                 )
 
+    } else if (method == "quantiles") {
+
+        # simulating data using these parameter values
+        simulated_data <- simulating(
+            nsims = 500,
+            nsamples = 3000,
+            true_pars = estimated_pars,
+            action_mode = action_mode,
+            model_version = model_version,
+            uncertainty = uncertainty
+            ) %>%
+            # removing NAs or aberrant simulated data
+            stats::na.omit() %>%
+            dplyr::filter(.data$reaction_time < 3 & .data$movement_time < 3)
+
+        # what quantiles should we look at?
+        quantile_probs <- seq(0.1, 0.9, 0.1)
+
+        # binding original and simulated data and plotting it
+        dplyr::bind_rows(
+            original_data %>% dplyr::mutate(type = "observed"),
+            simulated_data %>% dplyr::mutate(type = "simulated")
+            ) %>%
+            tidyr::pivot_longer(names_to = "measure", cols = .data$reaction_time:.data$movement_time) %>%
+            dplyr::group_by(.data$type, .data$measure) %>%
+            dplyr::reframe(tibble::enframe(stats::quantile(x = .data$value, probs = quantile_probs, na.rm = TRUE, names = TRUE) ) ) %>%
+            dplyr::ungroup() %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
+                    x = .data$name, y = .data$value,
+                    group = interaction(.data$type, .data$measure),
+                    colour = .data$measure, fill = .data$measure,
+                    shape = .data$type
+                    )
+                ) +
+            ggplot2::geom_line(alpha = 0.5, linetype = 3) +
+            ggplot2::geom_point(
+                size = 4,
+                alpha = 0.9,
+                show.legend = TRUE
+                ) +
+            ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
+            ggplot2::labs(
+                x = "Percentile", y = "Time (in seconds)",
+                colour = "", fill = "", shape = ""
+                )
+
     } else if (method == "latent") {
 
         if (model_version == "TMM3") {
 
-            par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
+            par_names <- c("exec_threshold", "peak_time", "curvature")
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
@@ -352,12 +421,14 @@ plot.DEoptim_momimi <- function (
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
-                nsims = 500, nsamples = 2000,
-                exec_threshold = estimated_pars[1] * 1.5,
-                imag_threshold = 0.5 * estimated_pars[1] * 1.5,
-                amplitude_activ = 1.5,
+                nsims = 500,
+                nsamples = 3000,
+                exec_threshold = estimated_pars[1],
+                imag_threshold = 0.5 * estimated_pars[1],
+                amplitude_activ = 1,
                 peak_time_activ = log(estimated_pars[2]),
                 curvature_activ = estimated_pars[3],
+                bw_noise = 0.1,
                 model_version = model_version,
                 full_output = TRUE
                 ) %>%
@@ -369,24 +440,12 @@ plot.DEoptim_momimi <- function (
                         )
                     ) +
                 # plotting the motor execution and motor imagery thresholds
-                # geomtextpath::geom_labelhline(
-                #     yintercept = estimated_pars[1] * 1.5,
-                #     linetype = 2,
-                #     hjust = 0.6,
-                #     label = "Motor execution threshold"
-                #     ) +
-                # geomtextpath::geom_labelhline(
-                #     yintercept = 0.5 * estimated_pars[1] * 1.5,
-                #     linetype = 2,
-                #     hjust = 0.6,
-                #     label = "Motor imagery threshold"
-                #     ) +
                 ggplot2::geom_hline(
-                    yintercept = estimated_pars[1] * 1.5,
+                    yintercept = estimated_pars[1],
                     linetype = 2
                     ) +
                 ggplot2::geom_hline(
-                    yintercept = 0.5 * estimated_pars[1] * 1.5,
+                    yintercept = 0.5 * estimated_pars[1],
                     linetype = 2
                     ) +
                 # plotting average
@@ -406,16 +465,16 @@ plot.DEoptim_momimi <- function (
                     ) +
                 ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
                 ggplot2::labs(
-                    title = "Latent function",
+                    title = "Latent activation function",
                     x = "Time within a trial (in seconds)",
-                    y = "Activation/inhibition (a.u.)",
+                    y = "Activation (a.u.)",
                     colour = "",
                     fill = ""
                     )
 
         } else if (model_version == "TMM4") {
 
-            par_names <- c("amplitude", "peak_time", "curvature", "exec_threshold")
+            par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
@@ -423,13 +482,16 @@ plot.DEoptim_momimi <- function (
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
-                nsims = 500, nsamples = 2000,
-                exec_threshold = estimated_pars[4] * estimated_pars[1],
-                imag_threshold = 0.5 * estimated_pars[4] * estimated_pars[1],
-                amplitude_activ = estimated_pars[1],
+                nsims = 500,
+                nsamples = 3000,
+                exec_threshold = estimated_pars[1],
+                imag_threshold = 0.5 * estimated_pars[1],
+                amplitude_activ = 1,
                 peak_time_activ = log(estimated_pars[2]),
                 curvature_activ = estimated_pars[3],
+                bw_noise = estimated_pars[4],
                 model_version = model_version,
+                uncertainty = uncertainty,
                 full_output = TRUE
                 ) %>%
                 tidyr::pivot_longer(cols = .data$activation) %>%
@@ -440,29 +502,16 @@ plot.DEoptim_momimi <- function (
                         )
                     ) +
                 # plotting the motor execution and motor imagery thresholds
-                # geomtextpath::geom_labelhline(
-                #     yintercept = estimated_pars[4] * estimated_pars[1],
-                #     linetype = 2,
-                #     hjust = 0.6,
-                #     label = "Motor execution threshold"
-                #     ) +
-                # geomtextpath::geom_labelhline(
-                #     yintercept = 0.5 * estimated_pars[4] * estimated_pars[1],
-                #     linetype = 2,
-                #     hjust = 0.6,
-                #     label = "Motor imagery threshold"
-                #     ) +
                 ggplot2::geom_hline(
-                    yintercept = estimated_pars[1] * estimated_pars[4],
+                    yintercept = estimated_pars[1],
                     linetype = 2
                     ) +
                 ggplot2::geom_hline(
-                    yintercept = 0.5 * estimated_pars[4] * estimated_pars[1],
+                    yintercept = 0.5 * estimated_pars[1],
                     linetype = 2
                     ) +
                 # plotting average
                 ggplot2::stat_summary(
-                    # ggplot2::aes(group = .data$name, colour = .data$name),
                     ggplot2::aes(group = .data$name),
                     fun = "median", geom = "line",
                     linewidth = 1, alpha = 1,
@@ -478,9 +527,9 @@ plot.DEoptim_momimi <- function (
                     ) +
                 ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
                 ggplot2::labs(
-                    title = "Latent functions",
+                    title = "Latent activation function",
                     x = "Time within a trial (in seconds)",
-                    y = "Activation/inhibition (a.u.)",
+                    y = "Activation (a.u.)",
                     colour = "",
                     fill = ""
                     )
@@ -495,7 +544,7 @@ plot.DEoptim_momimi <- function (
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
-                nsims = 500, nsamples = 2000,
+                nsims = 500, nsamples = 3000,
                 exec_threshold = 1, imag_threshold = 0.5,
                 amplitude_activ = 1.5,
                 peak_time_activ = log(estimated_pars[2]),

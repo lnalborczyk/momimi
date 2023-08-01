@@ -36,8 +36,9 @@ library(momimi)
 simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
-    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
+    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.5,
     model_version = "TMM3",
+    bw_noise = 0.05,
     full_output = TRUE
     )
 ```
@@ -64,19 +65,18 @@ plot(x = simulated_data, method = "distributions")
 
 We can also use the model to generate realistic data from known
 parameter values and then fit the model (below, the 3-parameter version
-of the TMM with between-trial noise) to these data to try recovering the
-original parameter values.
+of the TMM) to these data to try recovering the original parameter
+values.
 
 ``` r
 # plausible "true" parameter values in the TMM3
-# parameters are the relative motor execution threshold, the peak time,
-# the curvature, and the amount of between-trial variability in these parameters
-true_pars <- c(1.1, 0.5, 0.4, 0.09)
+# parameters are the motor execution threshold, the peak time, and the curvature
+true_pars <- c(1.1, 0.5, 0.4)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
     nsims = 200,
-    nsamples = 2000,
+    nsamples = 3000,
     true_pars = true_pars,
     action_mode = "imagined",
     model_version = "TMM3"
@@ -85,20 +85,22 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3734974     0.3419453    imagined
-#> 2      0.3384389     0.4264322    imagined
-#> 3      0.3187306     0.3962659    imagined
-#> 4      0.2825681     0.5340468    imagined
-#> 5      0.2805505     0.4946869    imagined
-#> 6      0.3735362     0.3896149    imagined
-#> 7      0.3624000     0.3090295    imagined
-#> 8      0.3355910     0.4103024    imagined
-#> 9      0.3137004     0.4495373    imagined
-#> 10     0.3323192     0.4944549    imagined
+#> 1      0.2821749     0.4949520    imagined
+#> 2      0.2855236     0.5497045    imagined
+#> 3      0.2864442     0.5486463    imagined
+#> 4      0.2806148     0.5910662    imagined
+#> 5      0.3266776     0.3458174    imagined
+#> 6      0.3373657     0.6269203    imagined
+#> 7      0.3113755     0.4611417    imagined
+#> 8      0.3176015     0.4394147    imagined
+#> 9      0.3949242     0.2541443    imagined
+#> 10     0.3513707     0.3120009    imagined
 ```
 
-We fit the model and use extra constraints on the initial parameter
-values to facilitate convergence (fitting can take a while).
+We fit the model and use realistic constraints (e.g., the RT/MT should
+be no less than 0.1s and no more than 2 seconds) on the initial
+parameter values (by setting `initial_pop_constraints = TRUE`) to
+facilitate convergence (fitting can take a while).
 
 ``` r
 # fitting the model
@@ -108,8 +110,8 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1, 0.05),
-    upper_bounds = c(2, 1.25, 0.6, 0.35),
+    lower_bounds = c(1, 0.25, 0.1),
+    upper_bounds = c(2, 1.25, 0.6),
     initial_pop_constraints = TRUE,
     maxit = 100
     )
@@ -120,10 +122,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.02639 0.50047 0.38425 0.08679 
-#> best value    :  0.00977 
+#> best member   :  1.31022 0.50973 0.48866 
+#> best value    :  0.0095 
 #> after         :  100 generations 
-#> fn evaluated  :  21917 times 
+#> fn evaluated  :  23230 times 
 #> *************************************
 ```
 
@@ -149,6 +151,18 @@ plot(
 ```
 
 <img src="man/figures/README-ppc-1.png" width="75%" />
+
+We can also do another form of “predictive check” by comparing the
+quantile values of the original and simulated data.
+
+``` r
+plot(
+    x = results, original_data = simulated_data,
+    method = "quantiles", model_version = "TMM3", action_mode = "imagined"
+    )
+```
+
+<img src="man/figures/README-quantiles-1.png" width="75%" />
 
 We can also visualise the trajectory in parameter space during
 optimisation interactively using `plotly` (not shown below, but you

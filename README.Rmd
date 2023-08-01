@@ -45,8 +45,9 @@ library(momimi)
 simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
-    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
+    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.5,
     model_version = "TMM3",
+    bw_noise = 0.05,
     full_output = TRUE
     )
 ```
@@ -63,18 +64,17 @@ plot(x = simulated_data, method = "distributions")
 
 ### Fitting the models
 
-We can also use the model to generate realistic data from known parameter values and then fit the model (below, the 3-parameter version of the TMM with between-trial noise) to these data to try recovering the original parameter values.
+We can also use the model to generate realistic data from known parameter values and then fit the model (below, the 3-parameter version of the TMM) to these data to try recovering the original parameter values.
 
 ```{r simulating2}
 # plausible "true" parameter values in the TMM3
-# parameters are the relative motor execution threshold, the peak time,
-# the curvature, and the amount of between-trial variability in these parameters
-true_pars <- c(1.1, 0.5, 0.4, 0.09)
+# parameters are the motor execution threshold, the peak time, and the curvature
+true_pars <- c(1.1, 0.5, 0.4)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
     nsims = 200,
-    nsamples = 2000,
+    nsamples = 3000,
     true_pars = true_pars,
     action_mode = "imagined",
     model_version = "TMM3"
@@ -84,7 +84,7 @@ simulated_data <- simulating(
 head(x = simulated_data, n = 10)
 ```
 
-We fit the model and use extra constraints on the initial parameter values to facilitate convergence (fitting can take a while).
+We fit the model and use realistic constraints (e.g., the RT/MT should be no less than 0.1s and no more than 2 seconds) on the initial parameter values (by setting `initial_pop_constraints = TRUE`) to facilitate convergence (fitting can take a while).
 
 ```{r fitting, results = "hide"}
 # fitting the model
@@ -94,10 +94,10 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1, 0.05),
-    upper_bounds = c(2, 1.25, 0.6, 0.35),
+    lower_bounds = c(1, 0.25, 0.1),
+    upper_bounds = c(2, 1.25, 0.6),
     initial_pop_constraints = TRUE,
-    maxit = 20
+    maxit = 100
     )
 ```
 
@@ -122,6 +122,15 @@ plot(
     )
 ```
 
+We can also do another form of "predictive check" by comparing the quantile values of the original and simulated data.
+
+```{r quantiles}
+plot(
+    x = results, original_data = simulated_data,
+    method = "quantiles", model_version = "TMM3", action_mode = "imagined"
+    )
+```
+
 We can also visualise the trajectory in parameter space during optimisation interactively using `plotly` (not shown below, but you should try this).
 
 ```{r optimisation, eval = FALSE}
@@ -130,7 +139,7 @@ plot(x = results, method = "optimisation")
 
 ## References
 
-Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X. (*submitted*). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint available at https://psyarxiv.com/tz6x2/.
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X. (*submitted*). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint available at <https://psyarxiv.com/tz6x2/>.
 
 ## Getting help
 

@@ -7,6 +7,8 @@
 #' @param true_pars Numeric, vector of "true" parameter values.
 #' @param action_mode Character, whether to simulate executed or imagined trials.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param uncertainty Numeric, indicates how noise is introduced in the system.
+#' @param bw_noise Numeric, amount of between-trial noise.
 #'
 #' @return A dataframe containing observation (i.e., RTs and MTs).
 #'
@@ -34,10 +36,12 @@
 
 simulating <- function (
         nsims = 100,
-        nsamples = 2000,
+        nsamples = 3000,
         true_pars = NULL,
         action_mode = c("executed", "imagined"),
-        model_version = c("TMM3", "TMM4", "PIM")
+        model_version = c("TMM3", "TMM4", "PIM"),
+        uncertainty = c("par_level", "func_level", "diffusion"),
+        bw_noise = NULL
         ) {
 
     # some tests for variable types
@@ -54,6 +58,9 @@ simulating <- function (
     # model_version should be one of above
     model_version <- match.arg(model_version)
 
+    # uncertainty should be one of above
+    uncertainty <- match.arg(uncertainty)
+
     if (model_version == "TMM3") {
 
         results <- model(
@@ -63,11 +70,14 @@ simulating <- function (
             exec_threshold = true_pars[1],
             # imag_threshold = 0.5 * true_pars[1] * 1.5,
             imag_threshold = 0.5 * true_pars[1],
-            amplitude_activ = 1.5,
+            # amplitude_activ = 1.5,
+            amplitude_activ = 1,
             peak_time_activ = log(true_pars[2]),
             curvature_activ = true_pars[3],
-            bw_noise = true_pars[4],
+            # bw_noise = true_pars[4],
+            bw_noise = 0.1,
             model_version = model_version,
+            uncertainty = uncertainty,
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%
@@ -85,12 +95,14 @@ simulating <- function (
         results <- model(
             nsims = nsims,
             nsamples = nsamples,
-            exec_threshold = true_pars[4] * true_pars[1],
-            imag_threshold = 0.5 * true_pars[4] * true_pars[1],
-            amplitude_activ = true_pars[1],
+            exec_threshold = true_pars[1],
+            imag_threshold = 0.5 * true_pars[1],
+            amplitude_activ = 1,
             peak_time_activ = log(true_pars[2]),
             curvature_activ = true_pars[3],
+            bw_noise = true_pars[4],
             model_version = model_version,
+            uncertainty = uncertainty,
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%

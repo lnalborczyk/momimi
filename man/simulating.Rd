@@ -6,10 +6,12 @@
 \usage{
 simulating(
   nsims = 100,
-  nsamples = 2000,
+  nsamples = 3000,
   true_pars = NULL,
   action_mode = c("executed", "imagined"),
-  model_version = c("TMM3", "TMM4", "PIM")
+  model_version = c("TMM3", "TMM4", "PIM"),
+  uncertainty = c("par_level", "func_level", "diffusion"),
+  bw_noise = NULL
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ simulating(
 \item{action_mode}{Character, whether to simulate executed or imagined trials.}
 
 \item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
+
+\item{bw_noise}{Numeric, amount of between-trial noise.}
 }
 \value{
 A dataframe containing observation (i.e., RTs and MTs).

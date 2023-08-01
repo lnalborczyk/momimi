@@ -45,13 +45,14 @@
 #' @export
 
 model <- function (
-        nsims = 100, nsamples = 3000,
+        nsims = 100,
+        nsamples = 3000,
         exec_threshold = 1, imag_threshold = 0.5,
         amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
         amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
         bw_noise = NULL,
         model_version = c("TMM3", "TMM4", "PIM"),
-        uncertainty = c("par_specific", "brownian", "overall"),
+        uncertainty = c("par_level", "func_level", "diffusion"),
         full_output = FALSE,
         time_step = 0.001
         ) {
@@ -68,7 +69,10 @@ model <- function (
     uncertainty <- match.arg(uncertainty)
 
     # defining/retrieving the amount of between-trial noise (if any)
-    bw_noise <- ifelse(test = is.null(bw_noise), yes = 0.01, no = bw_noise)
+    bw_noise <- ifelse(
+        test = uncertainty != "diffusion" & is.null(bw_noise),
+        yes = 0.1, no = bw_noise
+        )
 
     # if full_output = TRUE, returns the full activation, inhibition,
     # and balance functions
@@ -91,6 +95,7 @@ model <- function (
                     peak_time = peak_time_activ,
                     curvature = curvature_activ,
                     uncertainty = uncertainty,
+                    bw_noise = bw_noise,
                     time_step = time_step
                     )
                 ) %>%
@@ -101,17 +106,18 @@ model <- function (
                     peak_time = peak_time_inhib,
                     curvature = curvature_inhib,
                     uncertainty = uncertainty,
+                    bw_noise = bw_noise,
                     time_step = time_step
                     )
                 ) %>%
             {if (model_version == "PIM") dplyr::mutate(., balance = .data$activation / .data$inhibition) else dplyr::mutate(., balance = .data$activation)} %>%
             # numerically finding the balance's onset (RT) and offset
-            dplyr::mutate(onset_exec = which(.data$balance > .data$exec_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_exec = which(.data$balance > .data$exec_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::last() ) %>%
             # MT is defined as offset minus onset
             dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-            dplyr::mutate(onset_imag = which(.data$balance > .data$imag_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_imag = which(.data$balance > .data$imag_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::last() ) %>%
             dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
             # convert from ms to seconds
             dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
@@ -128,7 +134,7 @@ model <- function (
             activation_function <- function (exec_threshold = 1,
                                              imag_threshold = 0.5,
                                              amplitude = 1.5, peak_time = 0,
-                                             curvature = 0.4, bw_noise = 0.01
+                                             curvature = 0.4, bw_noise = 0.1
                                              ) {
 
                 # adding some variability in the other parameters
@@ -138,7 +144,6 @@ model <- function (
                 curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
                 # no variability in the motor imagery threshold
-                # exec_threshold_sim <- stats::rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
                 exec_threshold_sim <- exec_threshold
                 imag_threshold_sim <- imag_threshold
 
@@ -204,7 +209,7 @@ model <- function (
             exec_threshold = 1, imag_threshold = 0.5,
             amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
             amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6,
-            bw_noise = 0.01
+            bw_noise = 0.1
             ) {
 
                 # adding some variability in the other parameters
@@ -295,6 +300,9 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
     # ensuring that method is one of the above
     method <- match.arg(method)
 
+    # testing whether activation is different than balance (i.e., TMM or PIM?)
+    multiple_functions <- any(x$activation != x$balance)
+
     if (method == "functions") {
 
         x %>%
@@ -308,19 +316,20 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 ) +
             # plotting the motor execution and motor imagery thresholds
             geomtextpath::geom_labelhline(
-                yintercept = 1, linetype = 2,
+                yintercept = 1,
+                linetype = 2,
                 hjust = 0.9,
                 label = "Motor execution threshold"
                 ) +
             geomtextpath::geom_labelhline(
-                yintercept = 0.5, linetype = 2,
+                yintercept = 0.5,
+                linetype = 2,
                 hjust = 0.9,
                 label = "Motor imagery threshold"
                 ) +
             # plotting some individual simulations
             ggplot2::geom_line(
                 data = . %>% dplyr::filter(.data$sim %in% unique(.data$sim)[1:20]),
-                # data = dplyr::filter(.data$sim %in% unique(.data$sim)[1:50]),
                 linewidth = 0.5, alpha = 0.2,
                 # colour = "grey",
                 show.legend = FALSE
@@ -331,7 +340,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 fun = "median", geom = "line",
                 # colour = "black",
                 linewidth = 1, alpha = 1,
-                show.legend = TRUE
+                show.legend = multiple_functions
                 ) +
             # ggplot2::ylim(c(0, 1.5) ) +
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +

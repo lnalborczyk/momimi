@@ -8,6 +8,7 @@
 #' @param lower_bounds Numeric, vector of lower bounds for parameters.
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param verbose Boolean, whether to print progress during fitting.
@@ -26,6 +27,7 @@ generating_initialpop <- function (
         nstudies, action_mode,
         par_names, lower_bounds, upper_bounds,
         model_version = c("TMM3", "TMM4", "PIM"),
+        uncertainty = c("par_level", "func_level", "diffusion"),
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         verbose = TRUE
         ) {
@@ -43,6 +45,9 @@ generating_initialpop <- function (
 
     # model_version should be one of above
     model_version <- match.arg(model_version)
+
+    # uncertainty should be one of above
+    uncertainty <- match.arg(uncertainty)
 
     # initialising the result_nrow variable
     result_nrow <- 0
@@ -69,7 +74,7 @@ generating_initialpop <- function (
             activation_function <- function (
         exec_threshold = 1, imag_threshold = 0.5,
         amplitude = 1.5, peak_time = 0, curvature = 0.4,
-        bw_noise = 0.01
+        bw_noise = 0.1
         ) {
 
                 # adding some variability in the other parameters
@@ -78,9 +83,7 @@ generating_initialpop <- function (
                 peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = bw_noise)
                 curvature_sim <- rnorm(n = 1, mean = curvature, sd = bw_noise)
 
-                # # no variability in the motor imagery threshold
-                # imag_threshold_sim <- rnorm(n = 1, mean = imag_threshold, sd = 0.01)
-                # exec_threshold_sim <- rnorm(n = 1, mean = exec_threshold, sd = bw_noise)
+                # # no variability in the motor execution or motor imagery thresholds
                 exec_threshold_sim <- exec_threshold
                 imag_threshold_sim <- imag_threshold
 
@@ -117,22 +120,57 @@ generating_initialpop <- function (
             # computing the predicted RT and MT
             if (model_version == "TMM3") {
 
-                predicted_rt_mt <- lhs_pars %>%
-                    dplyr::rowwise() %>%
-                    dplyr::do(
-                        suppressWarnings(
-                            activation_function(
-                                # exec_threshold = .data$exec_threshold * 1.5,
-                                # imag_threshold = 0.5 * .data$exec_threshold * 1.5,
-                                exec_threshold = .data$exec_threshold,
-                                imag_threshold = 0.5 * .data$exec_threshold,
-                                amplitude = 1.5,
-                                peak_time = log(.data$peak_time_activ),
-                                curvature = .data$curvature_activ,
-                                bw_noise = .data$bw_noise
+                if (uncertainty == "par_level") {
+
+                    predicted_rt_mt <- lhs_pars %>%
+                        dplyr::rowwise() %>%
+                        dplyr::do(
+                            suppressWarnings(
+                                activation_function(
+                                    exec_threshold = .data$exec_threshold,
+                                    imag_threshold = 0.5 * .data$exec_threshold,
+                                    amplitude = 1,
+                                    peak_time = log(.data$peak_time_activ),
+                                    curvature = .data$curvature_activ,
+                                    bw_noise = 0.1
+                                    )
                                 )
                             )
-                        )
+
+                } else {
+
+                    # computing the activation/inhibition balance and
+                    # implied distributions of RTs and MTs per simulation
+                    # predicted_rt_mt <- data.frame(
+                    #     sample = rep(1:nsamples, nsims),
+                    #     time = rep(1:nsamples, nsims) * time_step,
+                    #     exec_threshold = exec_threshold,
+                    #     imag_threshold = imag_threshold
+                    #     ) %>%
+                    #     dplyr::mutate(
+                    #         activation = activation(
+                    #             time = .data$time,
+                    #             amplitude = amplitude_activ,
+                    #             peak_time = peak_time_activ,
+                    #             curvature = curvature_activ,
+                    #             uncertainty = uncertainty,
+                    #             bw_noise = bw_noise,
+                    #             time_step = time_step
+                    #             )
+                    #         ) %>%
+                    #     # numerically finding the balance's onset (RT) and offset
+                    #     dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
+                    #     dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+                    #     # MT is defined as offset minus onset
+                    #     dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
+                    #     dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
+                    #     dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+                    #     dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
+                    #     # convert from ms to seconds
+                    #     dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
+                    #     dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec)
+
+                }
 
                 } else if (model_version == "TMM4") {
 
@@ -141,11 +179,12 @@ generating_initialpop <- function (
                         dplyr::do(
                             suppressWarnings(
                                 activation_function(
-                                    exec_threshold = .data$exec_threshold * .data$amplitude_activ,
-                                    imag_threshold = 0.5 * .data$exec_threshold * .data$amplitude_activ,
+                                    exec_threshold = .data$exec_threshold,
+                                    imag_threshold = 0.5 * .data$exec_threshold,
                                     amplitude = .data$amplitude_activ,
                                     peak_time = log(.data$peak_time_activ),
-                                    curvature = .data$curvature_activ
+                                    curvature = .data$curvature_activ,
+                                    bw_noise = .data$bw_noise
                                     )
                                 )
                             )
@@ -245,10 +284,6 @@ generating_initialpop <- function (
 
             final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
                 dplyr::rowwise() %>%
-                # dplyr::mutate(
-                #     balance_end_of_trial = 1.5 *
-                #         exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
-                #     ) %>%
                 dplyr::mutate(
                     balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
                     ) %>%
@@ -259,7 +294,6 @@ generating_initialpop <- function (
                         dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                        # balance_end_of_trial > 0.25 * exec_threshold * 1.5 ~ FALSE,
                         balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
                         .default = TRUE
                         )
@@ -270,8 +304,7 @@ generating_initialpop <- function (
             final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
                 dplyr::rowwise() %>%
                 dplyr::mutate(
-                    balance_end_of_trial = .data$amplitude_activ *
-                        exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
+                    balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
                     ) %>%
                 dplyr::mutate(
                     included = dplyr::case_when(
@@ -280,7 +313,7 @@ generating_initialpop <- function (
                         dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                         dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                        balance_end_of_trial > 0.25 * exec_threshold * amplitude_activ ~ FALSE,
+                        balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
                         .default = TRUE
                         )
                     )

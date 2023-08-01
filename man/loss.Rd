@@ -12,6 +12,8 @@ loss(
   model_version = c("TMM3", "TMM4", "PIM"),
   exec_threshold = 1,
   imag_threshold = 0.5,
+  uncertainty = c("par_level", "func_level", "diffusion"),
+  time_step = 0.001,
   error_function = c("g2", "rmse", "sse", "wsse", "ks")
 )
 }
@@ -29,6 +31,10 @@ loss(
 \item{exec_threshold}{motor execution threshold.}
 
 \item{imag_threshold}{motor imagery threshold.}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
+
+\item{time_step}{Numeric, time step used to numerical approximation.}
 
 \item{error_function}{Character, loss function to be used when fitting the model.}
 }

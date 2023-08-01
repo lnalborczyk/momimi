@@ -15,6 +15,7 @@ fitting(
   initial_pop_constraints = FALSE,
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
   model_version = c("TMM3", "TMM4", "PIM"),
+  uncertainty = c("par_level", "func_level", "diffusion"),
   method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
     "bobyqa", "nlminb", "all_methods", "optimParallel"),
   maxit = 100,
@@ -41,6 +42,8 @@ fitting(
 \item{error_function}{Character, error function to be used when fitting the model.}
 
 \item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+
+\item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{method}{Character, optimisation method (DEoptim seems to work best).}
 

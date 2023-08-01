@@ -35,14 +35,14 @@
 activation <- function (
         time = 0,
         amplitude = 1.5, peak_time = 0, curvature = 0.4,
-        uncertainty = c("par_specific", "overall", "brownian"),
-        bw_noise = 0.01, diffusion_coef = 0.01, time_step = 0.001
+        uncertainty = c("par_level", "func_level", "diffusion"),
+        bw_noise = 0.1, diffusion_coef = 0.001, time_step = 0.001
         ) {
 
     # uncertainty should be one of above
     uncertainty <- match.arg(uncertainty)
 
-    if (uncertainty == "par_specific") {
+    if (uncertainty == "par_level") {
 
         # adding some variability in the other parameters
         # variability is currently fixed but could also be estimated
@@ -53,13 +53,13 @@ activation <- function (
         activ_inhib <- amplitude_sim *
             exp(-(log(time) - peak_time_sim)^2 / (2 * curvature_sim^2) )
 
-    } else if (uncertainty == "overall") {
+    } else if (uncertainty == "func_level") {
 
         activ_inhib <- pmax(amplitude *
             exp(-(log(time) - peak_time)^2 / (2 * curvature^2) ) +
             stats::rnorm(n = 1, mean = 0, sd = bw_noise), 0)
 
-    } else if (uncertainty == "brownian") {
+    } else if (uncertainty == "diffusion") {
 
         # derivative of activation
         d_activation <- function (t, A, mu, sigma) {
