@@ -19,7 +19,6 @@ knitr::opts_chunk$set(
 
 [![GitHub repo size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
-[![GitHub downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
 The `momimi` package implements the "threshold modulation model" (TMM3/TMM4) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides fitting and plotting utilities.
     
@@ -124,7 +123,7 @@ plot(
 
 We can also do another form of "predictive check" by comparing the quantile values of the original and simulated data.
 
-```{r quantiles}
+```{r quantiles, out.width = "100%"}
 plot(
     x = results, original_data = simulated_data,
     method = "quantiles", model_version = "TMM3", action_mode = "imagined"
@@ -139,7 +138,9 @@ plot(x = results, method = "optimisation")
 
 ## References
 
-Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X. (*submitted*). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint available at <https://psyarxiv.com/tz6x2/>.
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X. (in preparation). Modelling the onset and duration of imagined actions: A novel algorithmic model of motor imagery.
+
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X. (under review). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint available at <https://psyarxiv.com/tz6x2/>.
 
 ## Getting help
 

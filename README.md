@@ -5,8 +5,6 @@
 size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last
 update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
-[![GitHub
-downloads](https://img.shields.io/github/downloads/lnalborczyk/momimi/total?logo=github)](https://github.com/lnalborczyk/momimi)
 
 The `momimi` package implements the “threshold modulation model”
 (TMM3/TMM4) and the “parallel inhibition model” (PIM) of motor
@@ -162,7 +160,7 @@ plot(
     )
 ```
 
-<img src="man/figures/README-quantiles-1.png" width="75%" />
+<img src="man/figures/README-quantiles-1.png" width="100%" />
 
 We can also visualise the trajectory in parameter space during
 optimisation interactively using `plotly` (not shown below, but you
@@ -174,8 +172,12 @@ plot(x = results, method = "optimisation")
 
 ## References
 
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X.
+(in preparation). Modelling the onset and duration of imagined actions:
+A novel algorithmic model of motor imagery.
+
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X.
-(*submitted*). Towards formal models of inhibitory mechanisms involved
+(under review). Towards formal models of inhibitory mechanisms involved
 in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint
 available at <https://psyarxiv.com/tz6x2/>.
 
