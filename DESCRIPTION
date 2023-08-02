@@ -1,7 +1,7 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
 Version: 0.0.5
-Date: 2023-08-01
+Date: 2023-08-02
 Authors@R: 
     c(
     person(
@@ -38,9 +38,13 @@ Imports:
     tidyr,
     tibble
 Suggests:
+    future,
+    future.apply,
     geomtextpath,
     knitr,
+    mgcv,
     plotly,
+    progressr,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -14,6 +14,7 @@
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param method Character, optimisation method (DEoptim seems to work best).
+#' @param grid_resolution Numeric, resolution of the grid when method = "grid_search".
 #' @param maxit Numeric, maximum number of iterations.
 #' @param verbose Boolean, whether to print progress during fitting.
 #'
@@ -70,8 +71,9 @@ fitting <- function (
         method = c(
             "SANN", "GenSA", "pso", "DEoptim",
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
-            "all_methods", "optimParallel"
+            "all_methods", "optimParallel", "grid_search"
             ),
+        grid_resolution = 0.01,
         maxit = 100, verbose = TRUE
         ) {
 
@@ -306,6 +308,82 @@ fitting <- function (
 
         # stopping the cluster
         parallel::stopCluster(cl)
+
+    } else if (method == "grid_search") {
+
+        # using all available cores
+        future::plan(future::multisession(workers = parallel::detectCores() ) )
+
+        # defining the grid of parameter values
+        parameters_grid <- tidyr::crossing(
+            a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
+            b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
+            c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution)
+            )
+
+        # warning the user
+        message(
+            paste(
+                "momimi will now explore",
+                nrow(parameters_grid),
+                "combinations of parameters values, so please adjust your expectations accordingly..."
+                )
+            )
+
+        # setting up the progress bar (see https://progressr.futureverse.org)
+        progressr::handlers(global = TRUE)
+
+        # initialising the progress bar
+        p <- progressr::progressor(steps = nrow(parameters_grid) )
+
+        # computing the error for many possible parameters values
+        error_surface <- parameters_grid %>%
+            dplyr::mutate(
+                error = future.apply::future_apply(
+                    X = ., MARGIN = 1,
+                    FUN = function(x, ...) {
+                        p(sprintf("x=%g", x) )
+                        momimi::loss(x, data = data, nsims = 500)
+                        },
+                    # FUN = momimi::loss,
+                    # data = data,
+                    # nsims = nrow(data),
+                    future.seed = NULL
+                    )
+                )
+
+        # finding the minimum (or minima) bias and noise values
+        minima <- which(error_surface$error == min(error_surface$error) )
+
+        # retrieving the best parameters values
+        raw_fit <- data.frame(error_surface[minima, ])
+
+        # removing rows with error = Inf
+        error_surface2 <- error_surface %>% dplyr::filter(.data$error < Inf)
+
+        # smoothing the error surface by fitting a GAM
+        mod <- mgcv::gam(
+            formula = error ~ te(a, b, c, k = 3, fx = TRUE),
+            data = error_surface2
+            )
+
+        # making predictions about z
+        zfit <- stats::fitted(mod)
+
+        # finding the min parameter values in the smoothed function
+        smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
+
+        # combining the two estimates
+        fit <- dplyr::bind_rows(
+            list(raw_estimates = raw_fit, smoothed_estimates = smoothed_fit),
+            .id = "estimates"
+            )
+
+        # retrieving the parameters' names
+        colnames(fit)[2:(1 + length(lower_bounds) )] <- par_names
+
+        # explicitly close multisession workers by switching plan
+        future::plan(future::sequential)
 
     }
 

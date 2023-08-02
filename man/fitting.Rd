@@ -17,7 +17,8 @@ fitting(
   model_version = c("TMM3", "TMM4", "PIM"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
-    "bobyqa", "nlminb", "all_methods", "optimParallel"),
+    "bobyqa", "nlminb", "all_methods", "optimParallel", "grid_search"),
+  grid_resolution = 0.01,
   maxit = 100,
   verbose = TRUE
 )
@@ -46,6 +47,8 @@ fitting(
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{method}{Character, optimisation method (DEoptim seems to work best).}
+
+\item{grid_resolution}{Numeric, resolution of the grid when method = "grid_search".}
 
 \item{maxit}{Numeric, maximum number of iterations.}
 
