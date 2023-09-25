@@ -564,7 +564,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                paste0(as.character(round(estimated_pars, 4) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
