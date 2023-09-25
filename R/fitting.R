@@ -23,6 +23,7 @@
 #' @return The optimised parameter values and further convergence information.
 #'
 #' @importFrom magrittr %>%
+#' @importFrom utils head
 #'
 #' @examples
 #' \dontrun{
@@ -176,6 +177,9 @@ fitting <- function (
                 uncertainty = uncertainty,
                 rt_contraints = rt_contraints, mt_contraints = mt_contraints
                 )
+
+            # printing the first few starting values (sanity check)
+            head(x = lhs_initial_pop)
 
         } else {
 
