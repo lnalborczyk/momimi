@@ -89,14 +89,14 @@ We fit the model and use realistic constraints (e.g., the RT/MT should be no les
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 200,
+    nsims = 10000,
     error_function = "g2",
     # method = "DEoptim",
     method = "grid_search",
-    grid_resolution = 0.01,
+    grid_resolution = 0.05,
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1),
-    upper_bounds = c(2, 1.25, 0.6),
+    lower_bounds = c(1.0, 0.3, 0.2),
+    upper_bounds = c(1.4, 0.7, 0.6),
     initial_pop_constraints = TRUE,
     maxit = 100
     )

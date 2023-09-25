@@ -75,8 +75,7 @@ generating_initialpop <- function (
             # defining the activation/inhibition rescaled lognormal function
             activation_function <- function (
                 exec_threshold = 1, imag_threshold = 0.5,
-                amplitude = 1.5, peak_time = 0, curvature = 0.4,
-                bw_noise = 0.1
+                amplitude = 1.5, peak_time = 0, curvature = 0.4, bw_noise = 0.1
                 ) {
 
                 # adding some variability in the other parameters
@@ -182,7 +181,7 @@ generating_initialpop <- function (
                         dplyr::rowwise() %>%
                         dplyr::do(suppressWarnings(rt_mt(.) ) )
 
-                }
+                    }
 
                 } else if (model_version == "TMM4") {
 
@@ -193,7 +192,7 @@ generating_initialpop <- function (
                                 activation_function(
                                     exec_threshold = .data$exec_threshold,
                                     imag_threshold = 0.5 * .data$exec_threshold,
-                                    amplitude = .data$amplitude_activ,
+                                    amplitude = 1,
                                     peak_time = log(.data$peak_time_activ),
                                     curvature = .data$curvature_activ,
                                     bw_noise = .data$bw_noise
@@ -201,7 +200,7 @@ generating_initialpop <- function (
                                 )
                             )
 
-                    }
+                   }
 
         } else if (model_version == "PIM") {
 
@@ -289,10 +288,10 @@ generating_initialpop <- function (
         # adding some constraints
         # to restrict parameter values to realistic RT/MT data (e.g., Evans, 2020)
         # predicted RT/MT should be valid (not a NaN)
-        # predicted RT should be be between 0.2 and 1 seconds
-        # predicted MT should be be between 0.2 and 2 seconds
-        # balance at the end of the trial should come back below 0.25
-        if (model_version == "TMM3") {
+        # predicted RT should be be between min(rt_constraints) and max(rt_constraints
+        # predicted MT should be be between min(mt_constraints) and max(mt_constraints)
+        # balance at the end of the trial should come back below 0.25 * exec_threshold
+        if (model_version %in% c("TMM3", "TMM4") ) {
 
             final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
                 dplyr::rowwise() %>%
@@ -311,24 +310,24 @@ generating_initialpop <- function (
                         )
                     )
 
-        } else if (model_version == "TMM4") {
-
-            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
-                dplyr::rowwise() %>%
-                dplyr::mutate(
-                    balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
-                    ) %>%
-                dplyr::mutate(
-                    included = dplyr::case_when(
-                        any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                        balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
-                        .default = TRUE
-                        )
-                    )
+        # } else if (model_version == "TMM4") {
+        #
+        #     final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
+        #         dplyr::rowwise() %>%
+        #         dplyr::mutate(
+        #             balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
+        #             ) %>%
+        #         dplyr::mutate(
+        #             included = dplyr::case_when(
+        #                 any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
+        #                 dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
+        #                 dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
+        #                 dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
+        #                 dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
+        #                 balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
+        #                 .default = TRUE
+        #                 )
+        #             )
 
         } else if (model_version == "PIM") {
 
@@ -346,7 +345,7 @@ generating_initialpop <- function (
                     dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
                     dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                     dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                    balance_end_of_trial > 0.25 ~ FALSE,
+                    balance_end_of_trial > 0.25 * 1.5 ~ FALSE,
                     .default = TRUE
                     ) )
 

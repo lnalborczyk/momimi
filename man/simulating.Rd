@@ -33,7 +33,7 @@ simulating(
 A dataframe containing observation (i.e., RTs and MTs).
 }
 \description{
-Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
+Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
 }
 \examples{
 \dontrun{

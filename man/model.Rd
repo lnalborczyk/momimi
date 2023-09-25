@@ -57,7 +57,7 @@ model(
 A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 }
 \description{
-Sampling from the two versions of the model.
+Sampling from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
 }
 \examples{
 \dontrun{

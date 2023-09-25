@@ -1,6 +1,6 @@
 #' Models of motor inhibition during motor imagery
 #'
-#' Sampling from the two versions of the model.
+#' Sampling from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
 #'
 #' @param nsims Numeric, number of simulations (observations/trials).
 #' @param nsamples Numeric, number of samples (time steps) within a trial.

@@ -1,7 +1,7 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
 Version: 0.0.5
-Date: 2023-08-02
+Date: 2023-09-25
 Authors@R: 
     c(
     person(
@@ -13,7 +13,8 @@ Authors@R:
     person(
     given = "Thibault", family = "Gajdos",
     role = "ctb",
-    email = "thibault.gajdos@gmail.com") )
+    email = "thibault.gajdos@gmail.com")
+    )
 Description: Provides source code for the "threshold modulation model" (TMM)
     and the "parallel inhibition model" (PIM) of motor inhibition during motor
     imagery as well as fitting and plotting utilities.

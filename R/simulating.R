@@ -1,6 +1,6 @@
 #' Simulating data
 #'
-#' Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
+#' Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
 #'
 #' @param nsims Numeric, number of studies to be simulated.
 #' @param nsamples Numeric, number of samples (time steps) within a trial.

@@ -10,6 +10,8 @@
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
 #' @param nstudies Numeric, number of starting values in the LHS.
 #' @param initial_pop_constraints Boolean, whether to use additional constraints when sampling initial parameter values.
+#' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
+#' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param error_function Character, error function to be used when fitting the model.
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
@@ -65,6 +67,7 @@ fitting <- function (
         lower_bounds, upper_bounds,
         nstudies = 200,
         initial_pop_constraints = FALSE,
+        rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         error_function = c("g2", "rmse", "sse", "wsse", "ks"),
         model_version = c("TMM3", "TMM4", "PIM"),
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -170,7 +173,8 @@ fitting <- function (
                 par_names = par_names,
                 lower_bounds = lower_bounds, upper_bounds = upper_bounds,
                 model_version = model_version,
-                uncertainty = uncertainty
+                uncertainty = uncertainty,
+                rt_contraints = rt_contraints, mt_contraints = mt_contraints
                 )
 
         } else {
@@ -321,7 +325,7 @@ fitting <- function (
             c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution)
             )
 
-        # warning the user
+        # warning the user about the number of simulation to evaluate...
         message(
             paste(
                 "momimi will now explore",
@@ -330,7 +334,7 @@ fitting <- function (
                 )
             )
 
-        # setting up the progress bar (see https://progressr.futureverse.org)
+        # setting up the progress bar (cf. https://progressr.futureverse.org)
         progressr::handlers(global = TRUE)
 
         # initialising the progress bar
@@ -341,9 +345,9 @@ fitting <- function (
             dplyr::mutate(
                 error = future.apply::future_apply(
                     X = ., MARGIN = 1,
-                    FUN = function(x, ...) {
+                    FUN = function (x, ...) {
                         p(sprintf("x=%g", x) )
-                        momimi::loss(x, data = data, nsims = 500)
+                        momimi::loss(x, data = data, nsims = nsims)
                         },
                     # FUN = momimi::loss,
                     # data = data,
@@ -352,10 +356,10 @@ fitting <- function (
                     )
                 )
 
-        # finding the minimum (or minima) bias and noise values
+        # finding the parameter values with the minimum error
         minima <- which(error_surface$error == min(error_surface$error) )
 
-        # retrieving the best parameters values
+        # retrieving the best parameter values
         raw_fit <- data.frame(error_surface[minima, ])
 
         # removing rows with error = Inf
@@ -363,14 +367,14 @@ fitting <- function (
 
         # smoothing the error surface by fitting a GAM
         mod <- mgcv::gam(
-            formula = error ~ te(a, b, c, k = 3, fx = TRUE),
+            formula = error ~ te(a, b, c, k = 5, fx = TRUE),
             data = error_surface2
             )
 
         # making predictions about z
         zfit <- stats::fitted(mod)
 
-        # finding the min parameter values in the smoothed function
+        # finding the best parameter values in the smoothed function
         smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
 
         # combining the two estimates

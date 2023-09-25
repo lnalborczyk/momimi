@@ -13,6 +13,8 @@ fitting(
   upper_bounds,
   nstudies = 200,
   initial_pop_constraints = FALSE,
+  rt_contraints = c(0.1, 2),
+  mt_contraints = c(0.1, 2),
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
   model_version = c("TMM3", "TMM4", "PIM"),
   uncertainty = c("par_level", "func_level", "diffusion"),
@@ -39,6 +41,10 @@ fitting(
 \item{nstudies}{Numeric, number of starting values in the LHS.}
 
 \item{initial_pop_constraints}{Boolean, whether to use additional constraints when sampling initial parameter values.}
+
+\item{rt_contraints}{Numeric, vector of length 2 specifying the min and max RT (in seconds).}
+
+\item{mt_contraints}{Numeric, vector of length 2 specifying the min and max MT (in seconds).}
 
 \item{error_function}{Character, error function to be used when fitting the model.}
 

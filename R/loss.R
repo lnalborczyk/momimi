@@ -103,8 +103,8 @@ loss <- function (
         # imagery threshold cannot be higher than execution threshold
         # balance max should not be above exec_threshold in imagined trials
         # balance max should not be above 4 * exec_threshold in executed trials
-        # balance value at the end of the trial should be below 0.25
-        ##########################################################################
+        # balance value at the end of the trial should be below 0.25 * exec_threshold
+        ##############################################################################
 
         # defining the activation/inhibition rescaled lognormal function
         activation_function <- function (
@@ -232,7 +232,8 @@ loss <- function (
             prediction_error <- Inf
             return (prediction_error)
 
-        } else if (balance_end_of_trial >= 0.5 * imag_threshold) {
+        # } else if (balance_end_of_trial >= 0.5 * imag_threshold) {
+        } else if (balance_end_of_trial >= 0.25 * exec_threshold) {
 
             prediction_error <- Inf
             return (prediction_error)
@@ -320,16 +321,16 @@ loss <- function (
         peak_time_inhib <- log(par[[2]])
         curvature_inhib <- par[[4]] * par[[3]]
 
-        ############################################################################
+        ###############################################################################
         # adding some constraints
-        # -------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------
         # predicted RTs/MTs should be valid (not a NaN)
         # curvature_activ should be lower than curvature_inhib
         # imagery threshold cannot be higher than execution threshold
         # balance max should not be above exec_threshold in imagined trials
         # balance max should not be above 4 * exec_threshold in executed trials
-        # balance value at the end of the trial should be below 0.25
-        ##########################################################################
+        # balance value at the end of the trial should be below 0.25 * exec_threshold
+        ###############################################################################
 
         # defining the balance function
         # basically a ratio of two rescaled lognormal functions
@@ -452,7 +453,7 @@ loss <- function (
             prediction_error <- Inf
             return (prediction_error)
 
-        } else if (balance_end_of_trial >= 0.25) {
+        } else if (balance_end_of_trial >= 0.25 * exec_threshold) {
 
             prediction_error <- Inf
             return (prediction_error)
