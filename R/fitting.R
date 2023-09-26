@@ -515,7 +515,7 @@ plot.DEoptim_momimi <- function (
                 peak_time_activ = log(estimated_pars[2]),
                 curvature_activ = estimated_pars[3],
                 bw_noise = 0.1,
-                model_version = model_version,
+                model_version = "TMM3",
                 full_output = TRUE
                 ) %>%
                 tidyr::pivot_longer(cols = .data$activation) %>%
@@ -564,7 +564,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 4) ), "\n")
+                paste0(as.character(round(estimated_pars, 3) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
@@ -576,7 +576,7 @@ plot.DEoptim_momimi <- function (
                 peak_time_activ = log(estimated_pars[2]),
                 curvature_activ = estimated_pars[3],
                 bw_noise = estimated_pars[4],
-                model_version = model_version,
+                model_version = "TMM4",
                 uncertainty = uncertainty,
                 full_output = TRUE
                 ) %>%
@@ -607,7 +607,7 @@ plot.DEoptim_momimi <- function (
                 ggplot2::annotate(
                     geom = "label",
                     x = Inf, y = Inf,
-                    hjust = 0, vjust = 1,
+                    hjust = 1, vjust = 1,
                     label = parameters_estimates_summary,
                     family = "Courier"
                     ) +

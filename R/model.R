@@ -60,7 +60,6 @@ model <- function (
     # some tests for variable types
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
-    stopifnot("curvature_inhib must be larger than curvature_activ..." = curvature_inhib > curvature_activ)
 
     # model_version should be one of above
     model_version <- match.arg(model_version)
