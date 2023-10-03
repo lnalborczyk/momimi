@@ -40,6 +40,7 @@
 #'     )
 #'
 #' # fitting the model
+#' # to keep a parameter constant, assign the same value to both upper and lower...
 #' results <- fitting(
 #'     data = simulated_data,
 #'     nsims = 200,
@@ -382,16 +383,19 @@ fitting <- function (
         smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
 
         # combining the two estimates
-        fit <- dplyr::bind_rows(
+        parameter_estimates <- dplyr::bind_rows(
             list(raw_estimates = raw_fit, smoothed_estimates = smoothed_fit),
             .id = "estimates"
             )
 
         # retrieving the parameters' names
-        colnames(fit)[2:(1 + length(lower_bounds) )] <- par_names
+        colnames(parameter_estimates)[2:(1 + length(lower_bounds) )] <- par_names
 
         # explicitly close multisession workers by switching plan
         future::plan(future::sequential)
+
+        # returning both the error surface and the parameter estimates
+        fit <- list(error_surface, parameter_estimates)
 
     }
 
@@ -503,7 +507,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                paste0(as.character(round(estimated_pars, 2) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
@@ -564,7 +568,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                paste0(as.character(round(estimated_pars, 2) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
@@ -626,7 +630,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
+                paste0(as.character(round(estimated_pars, 2) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(

@@ -81,6 +81,7 @@ simulated_data <- simulating(
     )
 
 # fitting the model
+# to keep a parameter constant, assign the same value to both upper and lower...
 results <- fitting(
     data = simulated_data,
     nsims = 200,

@@ -23,3 +23,8 @@
 * Adding the possibility to fit models with function-level noise or diffusive noise (in addition to only parameter-level noise). These two options are slower because it requires numerically finding the RT and MT.
 * The 3-parameter version of the TMM (TMM3) now really has only 3 parameters, whereas the 4-parameter version now has the motor execution threshold, the peak time, the curvature, and the amount of between-trial variability as free parameters.
 - It is now possible to fit the models with "brute force" (i.e., defining a discrete grid and looking for the minimum).
+
+# momimi 0.0.6
+
+* Fixing some erroneous labelling in the plotting utilities.
+* Now returning the error surface in "grid_search" fitting method
