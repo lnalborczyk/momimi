@@ -27,4 +27,4 @@
 # momimi 0.0.6
 
 * Fixing some erroneous labelling in the plotting utilities.
-* Now returning the error surface in "grid_search" fitting method
+* Now returning the error surface in "grid_search" fitting method.
