@@ -323,12 +323,26 @@ fitting <- function (
         # using all available cores
         future::plan(future::multisession(workers = parallel::detectCores() ) )
 
-        # defining the grid of parameter values
-        parameters_grid <- tidyr::crossing(
-            a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
-            b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
-            c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution)
-            )
+        if (model_version == "TMM3") {
+
+            # defining the grid of parameter values
+            parameters_grid <- tidyr::crossing(
+                a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
+                b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
+                c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution)
+                )
+
+        } else if (model_version == "TMM4") {
+
+            # defining the grid of parameter values
+            parameters_grid <- tidyr::crossing(
+                a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
+                b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
+                c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution),
+                d = seq(from = lower_bounds[4], to = upper_bounds[4], by = grid_resolution)
+                )
+
+        }
 
         # warning the user about the number of simulation to evaluate...
         message(
@@ -362,40 +376,42 @@ fitting <- function (
                 )
 
         # finding the parameter values with the minimum error
-        minima <- which(error_surface$error == min(error_surface$error) )
+        # minima <- which(error_surface$error == min(error_surface$error) )
 
         # retrieving the best parameter values
-        raw_fit <- data.frame(error_surface[minima, ])
+        # raw_fit <- data.frame(error_surface[minima, ])
 
         # removing rows with error = Inf
-        error_surface2 <- error_surface %>% dplyr::filter(.data$error < Inf)
+        # error_surface2 <- error_surface %>% dplyr::filter(.data$error < Inf)
 
         # smoothing the error surface by fitting a GAM
-        mod <- mgcv::gam(
-            formula = error ~ te(a, b, c, k = 5, fx = TRUE),
-            data = error_surface2
-            )
+        # mod <- mgcv::gam(
+        #     # formula = error ~ te(a, b, c, k = 5, fx = TRUE),
+        #     formula = error ~ te(a, b, c, fx = TRUE),
+        #     data = error_surface2
+        #     )
 
         # making predictions about z
-        zfit <- stats::fitted(mod)
+        # zfit <- stats::fitted(mod)
 
         # finding the best parameter values in the smoothed function
-        smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
+        # smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
 
         # combining the two estimates
-        parameter_estimates <- dplyr::bind_rows(
-            list(raw_estimates = raw_fit, smoothed_estimates = smoothed_fit),
-            .id = "estimates"
-            )
+        # parameter_estimates <- dplyr::bind_rows(
+        #     list(raw_estimates = raw_fit, smoothed_estimates = smoothed_fit),
+        #     .id = "estimates"
+        #     )
 
         # retrieving the parameters' names
-        colnames(parameter_estimates)[2:(1 + length(lower_bounds) )] <- par_names
+        # colnames(parameter_estimates)[2:(1 + length(lower_bounds) )] <- par_names
 
         # explicitly close multisession workers by switching plan
         future::plan(future::sequential)
 
         # returning both the error surface and the parameter estimates
-        fit <- list(error_surface, parameter_estimates)
+        # fit <- list(error_surface, parameter_estimates)
+        fit <- error_surface
 
     }
 

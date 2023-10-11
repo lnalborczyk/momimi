@@ -27,4 +27,5 @@
 # momimi 0.0.6
 
 * Fixing some erroneous labelling in the plotting utilities.
-* Now returning the error surface in "grid_search" fitting method.
+* Now returning the full error surface in "grid_search" fitting method.
+* Removing constraints during fitting (i.e., exec_threshold was previously expected between 0.25 and 4)

@@ -209,7 +209,7 @@ loss <- function (
         }
 
         # computing the balance output at the end of the trial (i.e., when time = 3)
-        balance_end_of_trial <- amplitude_activ * exp(-(log(nsamples / 1e3) - peak_time_activ)^2 / (2 * curvature_activ^2) )
+        # balance_end_of_trial <- amplitude_activ * exp(-(log(nsamples / 1e3) - peak_time_activ)^2 / (2 * curvature_activ^2) )
 
         # coding the constraints (penalising by setting the prediction error to +Inf)
         if (any(is.na(predicted_rt_mt) ) ) {
@@ -227,16 +227,18 @@ loss <- function (
             prediction_error <- Inf
             return (prediction_error)
 
-        } else if (unique(data$action_mode) == "executed" & !is.na(peak_time_activ) & peak_time_activ >= 4 * exec_threshold) {
-
-            prediction_error <- Inf
-            return (prediction_error)
-
+        # } else if (unique(data$action_mode) == "executed" & !is.na(peak_time_activ) & peak_time_activ >= 4 * exec_threshold) {
+        #
+        #     prediction_error <- Inf
+        #     return (prediction_error)
+        #
         # } else if (balance_end_of_trial >= 0.5 * imag_threshold) {
-        } else if (balance_end_of_trial >= 0.25 * exec_threshold) {
-
-            prediction_error <- Inf
-            return (prediction_error)
+        # } else if (balance_end_of_trial >= 0.25 * exec_threshold) {
+        #
+        #     prediction_error <- Inf
+        #     return (prediction_error)
+        #
+        # }
 
         }
 
