@@ -6,10 +6,9 @@ size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgre
 [![GitHub last
 update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements the “threshold modulation model”
-(TMM3/TMM4) and the “parallel inhibition model” (PIM) of motor
-inhibition during motor imagery and provides fitting and plotting
-utilities.
+The `momimi` package implements different versions of the “threshold
+modulation model” (TMM3/TMM4) of motor imagery and provides fitting and
+plotting utilities.
 
 ## Installation
 
@@ -34,10 +33,9 @@ library(momimi)
 
 simulated_data <- model(
     nsims = 100, nsamples = 2000,
-    exec_threshold = 1, imag_threshold = 0.5,
-    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.5,
+    exec_threshold = 1.1, imag_threshold = 0.55,
+    peak_time = log(0.5), curvature = 0.5,
     model_version = "TMM3",
-    bw_noise = 0.05,
     full_output = TRUE
     )
 ```
@@ -84,16 +82,16 @@ simulated_data <- simulating(
 # displaying the first ten rows of these data
 head(x = simulated_data, n = 10)
 #>    reaction_time movement_time action_mode
-#> 1      0.3467196     0.3468904    imagined
-#> 2      0.3225490     0.4754676    imagined
-#> 3      0.3149780     0.6991953    imagined
-#> 4      0.2853013     0.7058372    imagined
-#> 5      0.2950119     0.3818491    imagined
-#> 6      0.3248526     0.4045011    imagined
-#> 7      0.4005530     0.5672460    imagined
-#> 8      0.3181484     0.4462748    imagined
-#> 9      0.2860371     0.3530964    imagined
-#> 10     0.3672168     0.4728014    imagined
+#> 1      0.3463210     0.5775052    imagined
+#> 2      0.2916296     0.3477735    imagined
+#> 3      0.3313592     0.4388002    imagined
+#> 4      0.2302411     0.5789106    imagined
+#> 5      0.2832451     0.5234344    imagined
+#> 6      0.3649216     0.3350144    imagined
+#> 7      0.3472452     0.6709369    imagined
+#> 8      0.2788206     0.4660134    imagined
+#> 9      0.3314475     0.6250139    imagined
+#> 10     0.4021022     0.4734235    imagined
 ```
 
 We fit the model and use realistic constraints (e.g., the RT/MT should
@@ -109,9 +107,12 @@ results <- fitting(
     error_function = "g2",
     method = "DEoptim",
     model_version = "TMM3",
-    lower_bounds = c(1, 0.25, 0.1),
-    upper_bounds = c(2, 1.25, 0.6),
+    lower_bounds = c(1.0, 0.3, 0.2),
+    upper_bounds = c(1.4, 0.7, 0.6),
     initial_pop_constraints = TRUE,
+    nstudies = 200,
+    rt_contraints = range(simulated_data$reaction_time),
+    mt_contraints = range(simulated_data$movement_time),
     maxit = 100
     )
 ```
@@ -121,10 +122,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.01658 0.50823 0.38563 
-#> best value    :  0.01212 
+#> best member   :  1.13808 0.50313 0.41482 
+#> best value    :  0.00876 
 #> after         :  100 generations 
-#> fn evaluated  :  23129 times 
+#> fn evaluated  :  26664 times 
 #> *************************************
 ```
 

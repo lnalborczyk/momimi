@@ -1,12 +1,12 @@
 #' Simulating data
 #'
-#' Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
+#' Simulating data from the "threshold modulation model" (TMM).
 #'
 #' @param nsims Numeric, number of studies to be simulated.
 #' @param nsamples Numeric, number of samples (time steps) within a trial.
 #' @param true_pars Numeric, vector of "true" parameter values.
 #' @param action_mode Character, whether to simulate executed or imagined trials.
-#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param bw_noise Numeric, amount of between-trial noise.
 #'
@@ -39,7 +39,7 @@ simulating <- function (
         nsamples = 3000,
         true_pars = NULL,
         action_mode = c("executed", "imagined"),
-        model_version = c("TMM3", "TMM4", "PIM"),
+        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         bw_noise = NULL
         ) {
@@ -68,9 +68,8 @@ simulating <- function (
             nsamples = nsamples,
             exec_threshold = true_pars[1],
             imag_threshold = 0.5 * true_pars[1],
-            amplitude_activ = 1,
-            peak_time_activ = log(true_pars[2]),
-            curvature_activ = true_pars[3],
+            peak_time = log(true_pars[2]),
+            curvature = true_pars[3],
             model_version = model_version,
             uncertainty = uncertainty,
             bw_noise = 0.1,
@@ -93,38 +92,11 @@ simulating <- function (
             nsamples = nsamples,
             exec_threshold = true_pars[1],
             imag_threshold = 0.5 * true_pars[1],
-            amplitude_activ = 1,
-            peak_time_activ = log(true_pars[2]),
-            curvature_activ = true_pars[3],
+            peak_time = log(true_pars[2]),
+            curvature = true_pars[3],
             bw_noise = true_pars[4],
             model_version = model_version,
             uncertainty = uncertainty,
-            full_output = FALSE
-            ) %>%
-            dplyr::mutate(action_mode = action_mode) %>%
-            dplyr::select(
-                .data$sim,
-                reaction_time = paste0("onset_", substr(unique(.$action_mode), 1, 4) ),
-                movement_time = paste0("mt_", substr(unique(.$action_mode), 1, 4) ),
-                action_mode
-                ) %>%
-            dplyr::distinct() %>%
-            dplyr::select(-.data$sim)
-
-    } else if (model_version == "PIM") {
-
-        results <- model(
-            nsims = nsims,
-            nsamples = nsamples,
-            exec_threshold = 1,
-            imag_threshold = 0.5,
-            amplitude_activ = 1.5,
-            peak_time_activ = log(true_pars[2]),
-            curvature_activ = true_pars[3],
-            amplitude_inhib = 1.5 / true_pars[1],
-            peak_time_inhib = log(true_pars[2]),
-            curvature_inhib = true_pars[4] * true_pars[3],
-            model_version = model_version,
             full_output = FALSE
             ) %>%
             dplyr::mutate(action_mode = action_mode) %>%

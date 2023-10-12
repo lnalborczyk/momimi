@@ -4,46 +4,24 @@
 \alias{onset_offset}
 \title{Finding onset and offset}
 \usage{
-onset_offset(
-  amplitude_activ = 1.5,
-  peak_time_activ = 0,
-  curvature_activ = 0.4,
-  amplitude_inhib = 1.5,
-  peak_time_inhib = 0,
-  curvature_inhib = 0.6,
-  thresh,
-  model_version = c("TMM3", "TMM4", "PIM")
-)
+onset_offset(peak_time = 0.5, curvature = 0.4, thresh = 0.5)
 }
 \arguments{
-\item{amplitude_activ}{Numeric, amplitude of the activation function.}
+\item{peak_time}{Numeric, peak time of the activation function.}
 
-\item{peak_time_activ}{Numeric, peak time of the activation function.}
-
-\item{curvature_activ}{Numeric, curvature of the activation function.}
-
-\item{amplitude_inhib}{Numeric, amplitude of the inhibition function.}
-
-\item{peak_time_inhib}{Numeric, peak time of the inhibition function.}
-
-\item{curvature_inhib}{Numeric, curvature of the inhibition function.}
+\item{curvature}{Numeric, curvature of the activation function.}
 
 \item{thresh}{Numeric, a threshold defining onset and offset.}
-
-\item{model_version}{Character, threshold modulation model ("TMM") or parallel inhibition model ("PIM").}
 }
 \value{
 A vector containing the onset (i.e., the lowest value above the threshold) and the offset (i.e., the highest value above the threshold).
 }
 \description{
-Finding onset and offset of the activation or balance functions (according to the model and some threshold).
+Finding onset and offset of the activation function (according to the model and some threshold).
 }
 \examples{
 \dontrun{
-onset_offset(
-    amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
-    thresh = 1, model_version = "TMM"
-    )
+onset_offset(peak_time = 0.5, curvature = 0.4, thresh = 0.5)
 }
 
 }

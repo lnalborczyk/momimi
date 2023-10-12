@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![GitHub repo size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements the "threshold modulation model" (TMM3/TMM4) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery and provides fitting and plotting utilities.
+The `momimi` package implements different versions of the "threshold modulation model" (TMM3/TMM4) of motor imagery and provides fitting and plotting utilities.
     
 ## Installation
 
@@ -43,10 +43,9 @@ library(momimi)
 
 simulated_data <- model(
     nsims = 100, nsamples = 2000,
-    exec_threshold = 1, imag_threshold = 0.5,
-    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.5,
+    exec_threshold = 1.1, imag_threshold = 0.55,
+    peak_time = log(0.5), curvature = 0.5,
     model_version = "TMM3",
-    bw_noise = 0.05,
     full_output = TRUE
     )
 ```
@@ -89,15 +88,16 @@ We fit the model and use realistic constraints (e.g., the RT/MT should be no les
 # fitting the model
 results <- fitting(
     data = simulated_data,
-    nsims = 10000,
+    nsims = 200,
     error_function = "g2",
-    # method = "DEoptim",
-    method = "grid_search",
-    grid_resolution = 0.05,
+    method = "DEoptim",
     model_version = "TMM3",
     lower_bounds = c(1.0, 0.3, 0.2),
     upper_bounds = c(1.4, 0.7, 0.6),
     initial_pop_constraints = TRUE,
+    nstudies = 200,
+    rt_contraints = range(simulated_data$reaction_time),
+    mt_contraints = range(simulated_data$movement_time),
     maxit = 100
     )
 ```

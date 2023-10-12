@@ -6,8 +6,7 @@
 \usage{
 activation(
   time = 0,
-  amplitude = 1.5,
-  peak_time = 0,
+  peak_time = 0.5,
   curvature = 0.4,
   uncertainty = c("par_level", "func_level", "diffusion"),
   bw_noise = 0.1,
@@ -17,8 +16,6 @@ activation(
 }
 \arguments{
 \item{time}{Numeric, time within a trial (in seconds).}
-
-\item{amplitude}{Numeric, amplitude of the activation function.}
 
 \item{peak_time}{Numeric, peak time of the activation function.}
 
@@ -46,7 +43,7 @@ curve(
     from = 0, 5,
     main = "Activation curve",
     xlab = "Time (in seconds)",
-    ylab = "Activation (arbitrary units)"
+    ylab = "Activation (a.u.)"
     )
 }
 

@@ -1,6 +1,6 @@
 #' Fitting the model
 #'
-#' Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
+#' Fitting the "threshold modulation model" (TMM) of motor inhibition during motor imagery.
 #'
 #' @param par Numeric, vector of parameter values.
 #' @param data Dataframe, data to be used for fitting the model.
@@ -13,7 +13,7 @@
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param error_function Character, error function to be used when fitting the model.
-#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param method Character, optimisation method (DEoptim seems to work best).
 #' @param grid_resolution Numeric, resolution of the grid when method = "grid_search".
@@ -71,7 +71,7 @@ fitting <- function (
         initial_pop_constraints = FALSE,
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         error_function = c("g2", "rmse", "sse", "wsse", "ks"),
-        model_version = c("TMM3", "TMM4", "PIM"),
+        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         method = c(
             "SANN", "GenSA", "pso", "DEoptim",
@@ -87,15 +87,11 @@ fitting <- function (
 
         if (model_version == "TMM3") {
 
-            par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ")
+            par_names <- c("exec_threshold", "peak_time", "curvature")
 
          } else if (model_version == "TMM4") {
 
-             par_names <- c("exec_threshold", "peak_time_activ", "curvature_activ", "bw_noise")
-
-        } else if (model_version == "PIM") {
-
-            par_names <- c("amplitude_ratio", "peak_time", "curvature_activ", "curvature_inhib")
+             par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
 
         }
 
@@ -375,42 +371,10 @@ fitting <- function (
                     )
                 )
 
-        # finding the parameter values with the minimum error
-        # minima <- which(error_surface$error == min(error_surface$error) )
-
-        # retrieving the best parameter values
-        # raw_fit <- data.frame(error_surface[minima, ])
-
-        # removing rows with error = Inf
-        # error_surface2 <- error_surface %>% dplyr::filter(.data$error < Inf)
-
-        # smoothing the error surface by fitting a GAM
-        # mod <- mgcv::gam(
-        #     # formula = error ~ te(a, b, c, k = 5, fx = TRUE),
-        #     formula = error ~ te(a, b, c, fx = TRUE),
-        #     data = error_surface2
-        #     )
-
-        # making predictions about z
-        # zfit <- stats::fitted(mod)
-
-        # finding the best parameter values in the smoothed function
-        # smoothed_fit <- data.frame(error_surface2[which.min(zfit), ])
-
-        # combining the two estimates
-        # parameter_estimates <- dplyr::bind_rows(
-        #     list(raw_estimates = raw_fit, smoothed_estimates = smoothed_fit),
-        #     .id = "estimates"
-        #     )
-
-        # retrieving the parameters' names
-        # colnames(parameter_estimates)[2:(1 + length(lower_bounds) )] <- par_names
-
         # explicitly close multisession workers by switching plan
         future::plan(future::sequential)
 
-        # returning both the error surface and the parameter estimates
-        # fit <- list(error_surface, parameter_estimates)
+        # returning the error surface
         fit <- error_surface
 
     }
@@ -425,7 +389,7 @@ plot.DEoptim_momimi <- function (
         x, original_data,
         method = c("ppc", "quantiles", "latent", "optimisation"),
         action_mode = c("executed", "imagined"),
-        model_version = c("TMM3", "TMM4", "PIM"),
+        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         ...
         ) {
@@ -523,7 +487,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 2) ), "\n")
+                paste0(as.character(round(estimated_pars, 3) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
@@ -531,9 +495,8 @@ plot.DEoptim_momimi <- function (
                 nsamples = 3000,
                 exec_threshold = estimated_pars[1],
                 imag_threshold = 0.5 * estimated_pars[1],
-                amplitude_activ = 1,
-                peak_time_activ = log(estimated_pars[2]),
-                curvature_activ = estimated_pars[3],
+                peak_time = log(estimated_pars[2]),
+                curvature = estimated_pars[3],
                 bw_noise = 0.1,
                 model_version = "TMM3",
                 full_output = TRUE
@@ -584,7 +547,7 @@ plot.DEoptim_momimi <- function (
 
             parameters_estimates_summary <- paste(as.vector(rbind(
                 paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 2) ), "\n")
+                paste0(as.character(round(estimated_pars, 3) ), "\n")
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
@@ -592,9 +555,8 @@ plot.DEoptim_momimi <- function (
                 nsamples = 3000,
                 exec_threshold = estimated_pars[1],
                 imag_threshold = 0.5 * estimated_pars[1],
-                amplitude_activ = 1,
-                peak_time_activ = log(estimated_pars[2]),
-                curvature_activ = estimated_pars[3],
+                peak_time = log(estimated_pars[2]),
+                curvature = estimated_pars[3],
                 bw_noise = estimated_pars[4],
                 model_version = "TMM4",
                 uncertainty = uncertainty,
@@ -636,62 +598,6 @@ plot.DEoptim_momimi <- function (
                     title = "Latent activation function",
                     x = "Time within a trial (in seconds)",
                     y = "Activation (a.u.)",
-                    colour = "",
-                    fill = ""
-                    )
-
-        } else if (model_version == "PIM") {
-
-            par_names <- c("amplitude_ratio", "peak_time", "curvature_activ", "curvature_inhib")
-
-            parameters_estimates_summary <- paste(as.vector(rbind(
-                paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 2) ), "\n")
-                ) ), collapse = "") %>% stringr::str_sub(end = -2)
-
-            model(
-                nsims = 500, nsamples = 3000,
-                exec_threshold = 1, imag_threshold = 0.5,
-                amplitude_activ = 1.5,
-                peak_time_activ = log(estimated_pars[2]),
-                curvature_activ = estimated_pars[3],
-                amplitude_inhib = 1.5 / estimated_pars[1],
-                peak_time_inhib = log(estimated_pars[2]),
-                curvature_inhib = estimated_pars[4] * estimated_pars[3],
-                model_version = "PIM",
-                full_output = TRUE
-                ) %>%
-                tidyr::pivot_longer(cols = .data$activation:.data$balance) %>%
-                ggplot2::ggplot(
-                    ggplot2::aes(
-                        x = .data$time, y = .data$value,
-                        group = interaction(.data$sim, .data$name),
-                        colour = .data$name
-                        )
-                    ) +
-                # plotting thresholds
-                ggplot2::geom_hline(yintercept = 1, linetype = 2) +
-                ggplot2::geom_hline(yintercept = 0.5, linetype = 2) +
-                # plotting average
-                ggplot2::stat_summary(
-                    ggplot2::aes(group = .data$name, colour = .data$name),
-                    fun = "median", geom = "line",
-                    linewidth = 1, alpha = 1,
-                    show.legend = TRUE
-                    ) +
-                # displaying estimated parameter values
-                ggplot2::annotate(
-                    geom = "label",
-                    x = Inf, y = Inf,
-                    hjust = 1, vjust = 1,
-                    label = parameters_estimates_summary,
-                    family = "Courier"
-                    ) +
-                ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
-                ggplot2::labs(
-                    title = "Latent activation, inhibition, and balance functions",
-                    x = "Time within a trial (in seconds)",
-                    y = "Activation/inhibition (a.u.)",
                     colour = "",
                     fill = ""
                     )

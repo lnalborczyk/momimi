@@ -29,3 +29,8 @@
 * Fixing some erroneous labelling in the plotting utilities.
 * Now returning the full error surface in "grid_search" fitting method.
 * Removing constraints during fitting (i.e., exec_threshold was previously expected between 0.25 and 4)
+
+# momimi 0.0.7
+
+* Removing the parallel inhibition model (non-identifiable)
+* Simplifying the threshold modulation model by dropping the amplitude parameter (fixed to 1)

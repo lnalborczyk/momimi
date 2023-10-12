@@ -6,7 +6,7 @@
 \alias{momimi-package}
 \title{momimi: Models of Motor Inhibition during Motor Imagery}
 \description{
-Provides source code for the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery as well as fitting and plotting utilities.
+Provides source code for different versions of the "threshold modulation model" of motor imagery as well as fitting and plotting utilities.
 }
 \author{
 \strong{Maintainer}: Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com} (\href{https://orcid.org/0000-0002-7419-9855}{ORCID})

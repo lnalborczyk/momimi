@@ -16,7 +16,7 @@ fitting(
   rt_contraints = c(0.1, 2),
   mt_contraints = c(0.1, 2),
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
-  model_version = c("TMM3", "TMM4", "PIM"),
+  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
     "bobyqa", "nlminb", "all_methods", "optimParallel", "grid_search"),
@@ -48,7 +48,7 @@ fitting(
 
 \item{error_function}{Character, error function to be used when fitting the model.}
 
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4").}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
@@ -64,7 +64,7 @@ fitting(
 The optimised parameter values and further convergence information.
 }
 \description{
-Fitting the "threshold modulation model" (TMM) and the "parallel inhibition model" (PIM) of motor inhibition during motor imagery.
+Fitting the "threshold modulation model" (TMM) of motor inhibition during motor imagery.
 }
 \examples{
 \dontrun{

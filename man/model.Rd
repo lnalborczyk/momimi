@@ -9,14 +9,10 @@ model(
   nsamples = 3000,
   exec_threshold = 1,
   imag_threshold = 0.5,
-  amplitude_activ = 1.5,
-  peak_time_activ = 0,
-  curvature_activ = 0.4,
-  amplitude_inhib = 1.5,
-  peak_time_inhib = 0,
-  curvature_inhib = 0.6,
+  peak_time = 0,
+  curvature = 0.4,
   bw_noise = NULL,
-  model_version = c("TMM3", "TMM4", "PIM"),
+  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   full_output = FALSE,
   time_step = 0.001
@@ -31,21 +27,13 @@ model(
 
 \item{imag_threshold}{Numeric, motor imagery threshold.}
 
-\item{amplitude_activ}{Numeric, amplitude of the activation function.}
+\item{peak_time}{Numeric, peak time of the activation function.}
 
-\item{peak_time_activ}{Numeric, peak time of the activation function.}
-
-\item{curvature_activ}{Numeric, curvature of the activation function.}
-
-\item{amplitude_inhib}{Numeric, amplitude of the inhibition function.}
-
-\item{peak_time_inhib}{Numeric, peak time of the inhibition function.}
-
-\item{curvature_inhib}{Numeric, curvature of the inhibition function.}
+\item{curvature}{Numeric, curvature of the activation function.}
 
 \item{bw_noise}{Numeric, amount of between-trial noise.}
 
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+\item{model_version}{Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
@@ -57,7 +45,7 @@ model(
 A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 }
 \description{
-Sampling from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
+Simulating data from the "threshold modulation model" (TMM).
 }
 \examples{
 \dontrun{
@@ -65,9 +53,8 @@ Sampling from the "threshold modulation model" (TMM) or the "parallel inhibition
 simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
-    amplitude_activ = 0.8, peak_time_activ = log(0.5), curvature_activ = 0.4,
-    amplitude_inhib = 1.75, peak_time_inhib = log(0.5), curvature_inhib = 0.5,
-    model_version = "PIM",
+    peak_time = log(0.5), curvature = 0.4, bw_noise = 0.08,
+    model_version = "TMM4",
     full_output = FALSE
     )
 

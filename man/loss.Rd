@@ -14,6 +14,7 @@ loss(
   imag_threshold = 0.5,
   uncertainty = c("par_level", "func_level", "diffusion"),
   time_step = 0.001,
+  diffusion_coef = 0.001,
   error_function = c("g2", "rmse", "sse", "wsse", "ks")
 )
 }
@@ -26,7 +27,7 @@ loss(
 
 \item{nsamples}{number of samples (time steps) within a trial.}
 
-\item{model_version}{Version of the model ("TMM" or "PIM").}
+\item{model_version}{Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").}
 
 \item{exec_threshold}{motor execution threshold.}
 
@@ -35,6 +36,8 @@ loss(
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{time_step}{Numeric, time step used to numerical approximation.}
+
+\item{diffusion_coef}{Numeric, diffusion coefficient.}
 
 \item{error_function}{Character, loss function to be used when fitting the model.}
 }

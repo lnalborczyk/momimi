@@ -7,7 +7,7 @@
 #' @param par_names Character, vector of parameter names.
 #' @param lower_bounds Numeric, vector of lower bounds for parameters.
 #' @param upper_bounds Numeric, vector of upper bounds for parameters.
-#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").
+#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param time_step Numeric, time step used to numerical approximation.
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
@@ -27,7 +27,7 @@
 generating_initialpop <- function (
         nstudies, action_mode,
         par_names, lower_bounds, upper_bounds,
-        model_version = c("TMM3", "TMM4", "PIM"),
+        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         time_step = 0.001,
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
@@ -80,7 +80,6 @@ generating_initialpop <- function (
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                amplitude_sim <- rnorm(n = 1, mean = amplitude, sd = bw_noise)
                 peak_time_sim <- rnorm(n = 1, mean = peak_time, sd = bw_noise)
                 curvature_sim <- rnorm(n = 1, mean = curvature, sd = bw_noise)
 
@@ -90,11 +89,9 @@ generating_initialpop <- function (
 
                 # computing the predicted RT and MT in imagery
                 onset_offset_imag <- onset_offset(
-                    amplitude_activ = amplitude_sim,
-                    peak_time_activ = peak_time_sim,
-                    curvature_activ = curvature_sim,
-                    thresh = imag_threshold_sim,
-                    model_version = model_version
+                    peak_time = peak_time_sim,
+                    curvature = curvature_sim,
+                    thresh = imag_threshold_sim
                     )
 
                 onset_imag <- min(onset_offset_imag)
@@ -103,11 +100,9 @@ generating_initialpop <- function (
                 # computing the predicted RT and MT in execution
                 # computing the predicted RT and MT in imagery
                 onset_offset_exec <- onset_offset(
-                    amplitude_activ = amplitude_sim,
-                    peak_time_activ = peak_time_sim,
-                    curvature_activ = curvature_sim,
-                    thresh = exec_threshold_sim,
-                    model_version = model_version
+                    peak_time = peak_time_sim,
+                    curvature = curvature_sim,
+                    thresh = exec_threshold_sim
                     )
 
                 onset_exec <- min(onset_offset_exec)
@@ -130,9 +125,8 @@ generating_initialpop <- function (
                                 activation_function(
                                     exec_threshold = .data$exec_threshold,
                                     imag_threshold = 0.5 * .data$exec_threshold,
-                                    amplitude = 1,
-                                    peak_time = log(.data$peak_time_activ),
-                                    curvature = .data$curvature_activ,
+                                    peak_time = log(.data$peak_time),
+                                    curvature = .data$curvature,
                                     bw_noise = 0.1
                                     )
                                 )
@@ -153,9 +147,8 @@ generating_initialpop <- function (
                         dplyr::mutate(
                             activation = activation(
                                 time = .data$time,
-                                amplitude = 1,
-                                peak_time = input_pars$peak_time_activ,
-                                curvature = input_pars$curvature_activ,
+                                peak_time = input_pars$peak_time,
+                                curvature = input_pars$curvature,
                                 uncertainty = uncertainty,
                                 bw_noise = 0.1,
                                 time_step = time_step
@@ -192,86 +185,14 @@ generating_initialpop <- function (
                                 activation_function(
                                     exec_threshold = .data$exec_threshold,
                                     imag_threshold = 0.5 * .data$exec_threshold,
-                                    amplitude = 1,
-                                    peak_time = log(.data$peak_time_activ),
-                                    curvature = .data$curvature_activ,
+                                    peak_time = log(.data$peak_time),
+                                    curvature = .data$curvature,
                                     bw_noise = .data$bw_noise
                                     )
                                 )
                             )
 
                    }
-
-        } else if (model_version == "PIM") {
-
-            # defining the balance function
-            # basically a ratio of two rescaled lognormal functions
-            balance_function <- function (
-        exec_threshold = 1, imag_threshold = 0.5,
-        amplitude_activ = 1.5, peak_time_activ = 0, curvature_activ = 0.4,
-        amplitude_inhib = 1.5, peak_time_inhib = 0, curvature_inhib = 0.6
-        ) {
-
-                # adding some variability in the other parameters
-                # variability is currently fixed but could also be estimated
-                amplitude_activ_sim <- stats::rnorm(n = 1, mean = amplitude_activ, sd = 0.01)
-                peak_time_activ_sim <- stats::rnorm(n = 1, mean = peak_time_activ, sd = 0.01)
-                curvature_activ_sim <- stats::rnorm(n = 1, mean = curvature_activ, sd = 0.01)
-
-                amplitude_inhib_sim <- stats::rnorm(n = 1, mean = amplitude_inhib, sd = 0.01)
-                peak_time_inhib_sim <- stats::rnorm(n = 1, mean = peak_time_inhib, sd = 0.01)
-                curvature_inhib_sim <- stats::rnorm(n = 1, mean = curvature_inhib, sd = 0.01)
-
-                # computing the predicted RT and MT in imagery
-                onset_offset_imag <- onset_offset(
-                    amplitude_activ = amplitude_activ_sim,
-                    peak_time_activ = peak_time_activ_sim,
-                    curvature_activ =  curvature_activ_sim,
-                    amplitude_inhib = amplitude_inhib_sim,
-                    peak_time_inhib = peak_time_inhib_sim,
-                    curvature_inhib = curvature_inhib_sim,
-                    thresh = imag_threshold,
-                    model_version = model_version
-                    )
-
-                onset_imag <- min(onset_offset_imag)
-                mt_imag <- max(onset_offset_imag) - min(onset_offset_imag)
-
-                # computing the predicted RT and MT in execution
-                onset_offset_exec <- onset_offset(
-                    amplitude_activ = amplitude_activ_sim,
-                    peak_time_activ = peak_time_activ_sim,
-                    curvature_activ =  curvature_activ_sim,
-                    amplitude_inhib = amplitude_inhib_sim,
-                    peak_time_inhib = peak_time_inhib_sim,
-                    curvature_inhib = curvature_inhib_sim,
-                    thresh = exec_threshold,
-                    model_version = model_version
-                    )
-
-                onset_exec <- min(onset_offset_exec)
-                mt_exec <- max(onset_offset_exec) - min(onset_offset_exec)
-
-                # returning it
-                return (data.frame(onset_imag, mt_imag, onset_exec, mt_exec) )
-
-            }
-
-            # computing the predicted RT and MT
-            predicted_rt_mt <- lhs_pars %>%
-                dplyr::rowwise() %>%
-                dplyr::do(
-                    suppressWarnings(
-                        balance_function(
-                            amplitude_activ = 1.5,
-                            peak_time_activ = log(.data$peak_time),
-                            curvature_activ = .data$curvature_activ,
-                            amplitude_inhib = 1.5 / .data$amplitude_ratio,
-                            peak_time_inhib = log(.data$peak_time),
-                            curvature_inhib = .data$curvature_inhib * .data$curvature_activ
-                            )
-                        )
-                    )
 
         }
 
@@ -290,66 +211,18 @@ generating_initialpop <- function (
         # predicted RT/MT should be valid (not a NaN)
         # predicted RT should be be between min(rt_constraints) and max(rt_constraints
         # predicted MT should be be between min(mt_constraints) and max(mt_constraints)
-        # balance at the end of the trial should come back below 0.25 * exec_threshold
-        if (model_version %in% c("TMM3", "TMM4") ) {
-
-            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
-                dplyr::rowwise() %>%
-                # dplyr::mutate(
-                #     balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
-                #     ) %>%
-                dplyr::mutate(
-                    included = dplyr::case_when(
-                        any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
-                        dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                        # balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
-                        .default = TRUE
-                        )
-                    )
-
-        # } else if (model_version == "TMM4") {
-        #
-        #     final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
-        #         dplyr::rowwise() %>%
-        #         dplyr::mutate(
-        #             balance_end_of_trial = exp(-(log(3) - .data$peak_time_activ)^2 / (2 * .data$curvature_activ^2) )
-        #             ) %>%
-        #         dplyr::mutate(
-        #             included = dplyr::case_when(
-        #                 any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
-        #                 dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
-        #                 dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
-        #                 dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
-        #                 dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-        #                 balance_end_of_trial > 0.25 * exec_threshold ~ FALSE,
-        #                 .default = TRUE
-        #                 )
-        #             )
-
-        } else if (model_version == "PIM") {
-
-            final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
-                dplyr::rowwise() %>%
-                # dplyr::mutate(
-                #     balance_end_of_trial = .data$amplitude_ratio *
-                #         exp(-(log(3) - .data$peak_time)^2 / (2 * .data$curvature_activ^2) +
-                #                 (log(3) - .data$peak_time)^2 / (2 * .data$curvature_inhib^2) )
-                #     ) %>%
-                dplyr::mutate(
-                    included = dplyr::case_when(
+        final_par_values <- dplyr::bind_cols(lhs_pars, predicted_rt_mt) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(
+                included = dplyr::case_when(
                     any(is.na(dplyr::pick(dplyr::everything() ) ) ) ~ FALSE,
                     dplyr::pick(length(par_names) + 1) < min(rt_contraints) ~ FALSE,
                     dplyr::pick(length(par_names) + 1) > max(rt_contraints) ~ FALSE,
                     dplyr::pick(length(par_names) + 2) < min(mt_contraints) ~ FALSE,
                     dplyr::pick(length(par_names) + 2) > max(mt_contraints) ~ FALSE,
-                    # balance_end_of_trial > 0.25 * 1.5 ~ FALSE,
                     .default = TRUE
-                    ) )
-
-        }
+                    )
+                )
 
         # reshaping the final matrix
         temp_lhs_initial_pop <- final_par_values %>%

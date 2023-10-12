@@ -10,7 +10,7 @@ generating_initialpop(
   par_names,
   lower_bounds,
   upper_bounds,
-  model_version = c("TMM3", "TMM4", "PIM"),
+  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   time_step = 0.001,
   rt_contraints = c(0.1, 2),
@@ -29,7 +29,7 @@ generating_initialpop(
 
 \item{upper_bounds}{Numeric, vector of upper bounds for parameters.}
 
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4").}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 

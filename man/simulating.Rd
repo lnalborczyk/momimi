@@ -9,7 +9,7 @@ simulating(
   nsamples = 3000,
   true_pars = NULL,
   action_mode = c("executed", "imagined"),
-  model_version = c("TMM3", "TMM4", "PIM"),
+  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   bw_noise = NULL
 )
@@ -23,7 +23,7 @@ simulating(
 
 \item{action_mode}{Character, whether to simulate executed or imagined trials.}
 
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4") or parallel inhibition model ("PIM").}
+\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4").}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
@@ -33,7 +33,7 @@ simulating(
 A dataframe containing observation (i.e., RTs and MTs).
 }
 \description{
-Simulating data from the "threshold modulation model" (TMM) or the "parallel inhibition model" (PIM).
+Simulating data from the "threshold modulation model" (TMM).
 }
 \examples{
 \dontrun{
