@@ -142,7 +142,7 @@ plot(x = results, method = "optimisation")
 
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X. (in preparation). Modelling the onset and duration of imagined actions: Assessing a novel algorithmic model of motor imagery.
 
-Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M., & Alario, F.-X. (under review). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach, Frank, & Kunde (2022). Preprint available at <https://psyarxiv.com/tz6x2/>.
+Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X. (2024). Towards formal models of inhibitory mechanisms involved in motor imagery: A commentary on Bach et al. (2022). Psychological Research, 1‐4. <https://doi.org/10.1007/s00426-023-01915-8>. Preprint available at <https://psyarxiv.com/tz6x2/>.
 
 ## Getting help
 

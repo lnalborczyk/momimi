@@ -90,13 +90,23 @@ model <- function (
                     time_step = time_step
                     )
                 ) %>%
+            # dplyr::mutate(
+            #     inhibition = activation(
+            #         time = .data$time,
+            #         peak_time = peak_time_inhib,
+            #         curvature = curvature_inhib,
+            #         uncertainty = uncertainty,
+            #         bw_noise = bw_noise,
+            #         time_step = time_step
+            #         )
+            #     ) %>%
             # numerically finding the onset (RT) and offset
-            dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::last() ) %>%
             # MT is defined as offset minus onset
             dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-            dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::last() ) %>%
             dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
             # convert from ms to seconds
             dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
@@ -109,7 +119,7 @@ model <- function (
 
         if (uncertainty == "par_level") {
 
-            # defining the activation/inhibition rescaled lognormal function
+            # defining the activation rescaled lognormal function
             activation_function <- function (
                 exec_threshold = 1, imag_threshold = 0.5,
                 amplitude = 1.5, peak_time = 0,
@@ -118,7 +128,6 @@ model <- function (
 
                 # adding some variability in the other parameters
                 # variability is currently fixed but could also be estimated
-                # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
                 peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
                 curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
@@ -230,12 +239,13 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
     if (method == "functions") {
 
         x %>%
-            tidyr::pivot_longer(., cols = .data$activation) %>%
+            # tidyr::pivot_longer(., cols = .data$activation) %>%
+            tidyr::pivot_longer(., cols = .data$balance) %>%
             ggplot2::ggplot(
                 ggplot2::aes(
                     x = .data$time, y = .data$value,
-                    group = interaction(.data$sim, .data$name),
-                    colour = .data$name
+                    group = interaction(.data$sim, .data$name)
+                    # colour = .data$name
                     )
                 ) +
             # plotting the motor execution and motor imagery thresholds
@@ -262,7 +272,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
             ggplot2::stat_summary(
                 ggplot2::aes(group = .data$name, colour = .data$name),
                 fun = "median", geom = "line",
-                # colour = "black",
+                colour = "black",
                 linewidth = 1, alpha = 1,
                 # show.legend = multiple_functions
                 show.legend = FALSE
@@ -271,7 +281,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
                 title = "Simulating activation patterns",
-                x = "Time within a trial (in seconds)",
+                x = "Time within a trial (s)",
                 y = "Activation (a.u.)",
                 colour = "",
                 fill = ""
@@ -316,7 +326,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
                 title = "Simulating the implied distributions of RTs and MTs",
-                x = "Reaction/Movement time (in seconds)",
+                x = "Reaction/Movement time (s)",
                 y = "Probability density"
                 )
 

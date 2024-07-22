@@ -20,6 +20,7 @@ fitting(
   uncertainty = c("par_level", "func_level", "diffusion"),
   method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
     "bobyqa", "nlminb", "all_methods", "optimParallel", "grid_search"),
+  cluster,
   grid_resolution = 0.01,
   maxit = 100,
   verbose = TRUE
@@ -53,6 +54,8 @@ fitting(
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{method}{Character, optimisation method (DEoptim seems to work best).}
+
+\item{cluster}{Character, existing parallel cluster object. If provided, overrides + specified parallelType.}
 
 \item{grid_resolution}{Numeric, resolution of the grid when method = "grid_search".}
 

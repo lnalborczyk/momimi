@@ -9,7 +9,7 @@ loss(
   data,
   nsims = NULL,
   nsamples = 3000,
-  model_version = c("TMM3", "TMM4", "PIM"),
+  model_version = c("TMM3", "TMM4"),
   exec_threshold = 1,
   imag_threshold = 0.5,
   uncertainty = c("par_level", "func_level", "diffusion"),

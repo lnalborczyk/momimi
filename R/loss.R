@@ -28,7 +28,7 @@ loss <- function (
         par, data,
         nsims = NULL,
         nsamples = 3000,
-        model_version = c("TMM3", "TMM4", "PIM"),
+        model_version = c("TMM3", "TMM4"),
         exec_threshold = 1,
         imag_threshold = 0.5,
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -98,8 +98,6 @@ loss <- function (
         # predicted RTs/MTs should be valid (not a NaN)
         # imagery threshold cannot be higher than execution threshold
         # balance max should not be above exec_threshold in imagined trials
-        # balance max should not be above 4 * exec_threshold in executed trials
-        # balance value at the end of the trial should be below 0.25 * exec_threshold
         ##############################################################################
 
         # defining the activation/inhibition rescaled lognormal function
@@ -110,7 +108,6 @@ loss <- function (
         ) {
 
             # adding some variability in the parameters
-            # amplitude_sim <- stats::rnorm(n = 1, mean = amplitude, sd = bw_noise)
             peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
             curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 

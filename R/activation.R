@@ -44,9 +44,10 @@ activation <- function (
     if (uncertainty == "par_level") {
 
         peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
-        curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
+        # curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
-        activ_inhib <- exp(-(log(time) - peak_time_sim)^2 / (2 * curvature_sim^2) )
+        # activ_inhib <- exp(-(log(time) - peak_time_sim)^2 / (2 * curvature_sim^2) )
+        activ_inhib <- exp(-(log(time) - peak_time_sim)^2 / (2 * curvature^2) )
 
     } else if (uncertainty == "func_level") {
 

@@ -16,6 +16,7 @@
 #' @param model_version Character, threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param method Character, optimisation method (DEoptim seems to work best).
+#' @param cluster Character, existing parallel cluster object. If provided, overrides + specified parallelType.
 #' @param grid_resolution Numeric, resolution of the grid when method = "grid_search".
 #' @param maxit Numeric, maximum number of iterations.
 #' @param verbose Boolean, whether to print progress during fitting.
@@ -78,6 +79,7 @@ fitting <- function (
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
             "all_methods", "optimParallel", "grid_search"
             ),
+        cluster,
         grid_resolution = 0.01,
         maxit = 100, verbose = TRUE
         ) {
@@ -245,7 +247,8 @@ fitting <- function (
                 # using all available cores
                 parallelType = "parallel",
                 # packages = c("DEoptim", "tidyverse", "tgp", "momimi")
-                packages = c("DEoptim", "dplyr", "tidyr", "tgp", "momimi")
+                packages = c("DEoptim", "dplyr", "tidyr", "tgp", "momimi"),
+                cluster = cluster
                 )
             )
 
@@ -429,7 +432,7 @@ plot.DEoptim_momimi <- function (
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
                 title = "Observed and simulated distributions of RTs/MTs",
-                x = "Reaction/Movement time (in seconds)", y = "Probability density"
+                x = "Reaction/Movement time (s)", y = "Probability density"
                 )
 
     } else if (method == "quantiles") {
@@ -475,7 +478,7 @@ plot.DEoptim_momimi <- function (
                 ) +
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
-                x = "Percentile", y = "Time (in seconds)",
+                x = "Percentile", y = "Time (s)",
                 colour = "", fill = "", shape = ""
                 )
 
@@ -535,7 +538,7 @@ plot.DEoptim_momimi <- function (
                 ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
                 ggplot2::labs(
                     title = "Latent activation function",
-                    x = "Time within a trial (in seconds)",
+                    x = "Time within a trial (s)",
                     y = "Activation (a.u.)",
                     colour = "",
                     fill = ""
@@ -596,7 +599,7 @@ plot.DEoptim_momimi <- function (
                 ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
                 ggplot2::labs(
                     title = "Latent activation function",
-                    x = "Time within a trial (in seconds)",
+                    x = "Time within a trial (s)",
                     y = "Activation (a.u.)",
                     colour = "",
                     fill = ""

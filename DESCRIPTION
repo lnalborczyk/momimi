@@ -1,7 +1,7 @@
 Package: momimi
 Title: Models of Motor Inhibition during Motor Imagery
-Version: 0.0.7
-Date: 2023-10-11
+Version: 0.0.8
+Date: 2024-07-22
 Authors@R: 
     c(
     person(
@@ -15,12 +15,11 @@ Authors@R:
     role = "ctb",
     email = "thibault.gajdos@gmail.com")
     )
-Description: Provides source code for different versions of the "threshold
-    modulation model" of motor imagery as well as fitting and plotting utilities.
+Description: Provides source code for the "threshold modulation model" (TMM) of motor imagery as well as fitting and plotting utilities.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports:
     dplyr,
     DEoptim,
