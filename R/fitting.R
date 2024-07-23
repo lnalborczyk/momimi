@@ -79,7 +79,7 @@ fitting <- function (
             "Nelder-Mead", "BFGS", "L-BFGS-B", "bobyqa", "nlminb",
             "all_methods", "optimParallel", "grid_search"
             ),
-        cluster,
+        cluster = NULL,
         grid_resolution = 0.01,
         maxit = 100, verbose = TRUE
         ) {
