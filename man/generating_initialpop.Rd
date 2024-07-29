@@ -6,6 +6,7 @@
 \usage{
 generating_initialpop(
   nstudies,
+  nsamples = 5000,
   action_mode,
   par_names,
   lower_bounds,
@@ -20,6 +21,8 @@ generating_initialpop(
 }
 \arguments{
 \item{nstudies}{Numeric, number of starting values in the LHS.}
+
+\item{nsamples}{Numeric, number of samples (time steps) within a trial.}
 
 \item{action_mode}{Character, action mode (executed or imagined).}
 

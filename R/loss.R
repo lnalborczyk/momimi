@@ -4,8 +4,8 @@
 #'
 #' @param par Numeric, vector of parameter values.
 #' @param data Dataframe, data to be used for computing the error.
-#' @param nsims number of simulations (observations/trials).
-#' @param nsamples number of samples (time steps) within a trial.
+#' @param nsims Numeric, number of simulations (observations/trials).
+#' @param nsamples Numeric, number of samples (time steps) within a trial.
 #' @param model_version Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param time_step Numeric, time step used to numerical approximation.
@@ -27,7 +27,7 @@
 loss <- function (
         par, data,
         nsims = NULL,
-        nsamples = 3000,
+        nsamples = 5000,
         model_version = c("TMM3", "TMM4"),
         exec_threshold = 1,
         imag_threshold = 0.5,

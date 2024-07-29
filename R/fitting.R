@@ -394,6 +394,8 @@ plot.DEoptim_momimi <- function (
         action_mode = c("executed", "imagined"),
         model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
+        nsims = 500, nsamples = 5000,
+        max_rt = 5, max_mt = 5,
         ...
         ) {
 
@@ -410,8 +412,8 @@ plot.DEoptim_momimi <- function (
 
         # simulating data using these parameter values
         simulating(
-            nsims = 500,
-            nsamples = 3000,
+            nsims = nsims,
+            nsamples = nsamples,
             true_pars = estimated_pars,
             action_mode = action_mode,
             model_version = model_version,
@@ -419,7 +421,7 @@ plot.DEoptim_momimi <- function (
             ) %>%
             # removing NAs or aberrant simulated data
             stats::na.omit() %>%
-            dplyr::filter(.data$reaction_time < 3 & .data$movement_time < 3) %>%
+            dplyr::filter(.data$reaction_time < max_rt & .data$movement_time < max_mt) %>%
             tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time) %>%
             ggplot2::ggplot(ggplot2::aes(x = .data$value, colour = .data$name, fill = .data$name) ) +
             ggplot2::geom_density(
@@ -439,8 +441,8 @@ plot.DEoptim_momimi <- function (
 
         # simulating data using these parameter values
         simulated_data <- simulating(
-            nsims = 500,
-            nsamples = 3000,
+            nsims = nsims,
+            nsamples = nsamples,
             true_pars = estimated_pars,
             action_mode = action_mode,
             model_version = model_version,
@@ -448,7 +450,7 @@ plot.DEoptim_momimi <- function (
             ) %>%
             # removing NAs or aberrant simulated data
             stats::na.omit() %>%
-            dplyr::filter(.data$reaction_time < 3 & .data$movement_time < 3)
+            dplyr::filter(.data$reaction_time < max_rt & .data$movement_time < max_mt)
 
         # what quantiles should we look at?
         quantile_probs <- seq(0.1, 0.9, 0.1)
@@ -494,8 +496,8 @@ plot.DEoptim_momimi <- function (
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
-                nsims = 500,
-                nsamples = 3000,
+                nsims = nsims,
+                nsamples = nsamples,
                 exec_threshold = estimated_pars[1],
                 imag_threshold = 0.5 * estimated_pars[1],
                 peak_time = log(estimated_pars[2]),
@@ -554,8 +556,8 @@ plot.DEoptim_momimi <- function (
                 ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
             model(
-                nsims = 500,
-                nsamples = 3000,
+                nsims = nsims,
+                nsamples = nsamples,
                 exec_threshold = estimated_pars[1],
                 imag_threshold = 0.5 * estimated_pars[1],
                 peak_time = log(estimated_pars[2]),

@@ -8,7 +8,7 @@ loss(
   par,
   data,
   nsims = NULL,
-  nsamples = 3000,
+  nsamples = 5000,
   model_version = c("TMM3", "TMM4"),
   exec_threshold = 1,
   imag_threshold = 0.5,
@@ -23,9 +23,9 @@ loss(
 
 \item{data}{Dataframe, data to be used for computing the error.}
 
-\item{nsims}{number of simulations (observations/trials).}
+\item{nsims}{Numeric, number of simulations (observations/trials).}
 
-\item{nsamples}{number of samples (time steps) within a trial.}
+\item{nsamples}{Numeric, number of samples (time steps) within a trial.}
 
 \item{model_version}{Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").}
 

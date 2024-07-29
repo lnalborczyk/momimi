@@ -36,7 +36,7 @@
 
 simulating <- function (
         nsims = 100,
-        nsamples = 3000,
+        nsamples = 5000,
         true_pars = NULL,
         action_mode = c("executed", "imagined"),
         model_version = c("TMM3", "TMM4"),

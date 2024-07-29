@@ -3,6 +3,7 @@
 #' Generating plausible initial parameter values for DEoptim based on empirical constraints.
 #'
 #' @param nstudies Numeric, number of starting values in the LHS.
+#' @param nsamples Numeric, number of samples (time steps) within a trial.
 #' @param action_mode Character, action mode (executed or imagined).
 #' @param par_names Character, vector of parameter names.
 #' @param lower_bounds Numeric, vector of lower bounds for parameters.
@@ -25,7 +26,9 @@
 #' @export
 
 generating_initialpop <- function (
-        nstudies, action_mode,
+        nstudies,
+        nsamples = 5000,
+        action_mode,
         par_names, lower_bounds, upper_bounds,
         model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -139,8 +142,8 @@ generating_initialpop <- function (
                     rt_mt <- function (input_pars) {
 
                         data.frame(
-                            sample = 1:3000,
-                            time = 1:3000 * time_step,
+                            sample = 1:nsamples,
+                            time = 1:nsamples * time_step,
                             exec_threshold = input_pars$exec_threshold,
                             imag_threshold = 0.5 * input_pars$exec_threshold
                             ) %>%

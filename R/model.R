@@ -41,7 +41,7 @@
 
 model <- function (
         nsims = 100,
-        nsamples = 3000,
+        nsamples = 5000,
         exec_threshold = 1, imag_threshold = 0.5,
         peak_time = 0, curvature = 0.4,
         bw_noise = NULL,
