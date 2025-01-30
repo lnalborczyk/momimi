@@ -10,9 +10,8 @@ model(
   exec_threshold = 1,
   imag_threshold = 0.5,
   peak_time = 0,
-  curvature = 0.4,
+  curvature = 0.6,
   bw_noise = NULL,
-  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   full_output = FALSE,
   time_step = 0.001
@@ -33,11 +32,9 @@ model(
 
 \item{bw_noise}{Numeric, amount of between-trial noise.}
 
-\item{model_version}{Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").}
-
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
-\item{full_output}{Boolean, indicating whether activ/inhib curves should be returned.}
+\item{full_output}{Boolean, indicating whether activation curves should be returned.}
 
 \item{time_step}{Numeric, time step used to numerical approximation.}
 }
@@ -45,7 +42,7 @@ model(
 A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
 }
 \description{
-Simulating data from the "threshold modulation model" (TMM).
+Simulating data from the "threshold modulation model" (TMM) of motor imagery.
 }
 \examples{
 \dontrun{
@@ -54,7 +51,6 @@ simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1, imag_threshold = 0.5,
     peak_time = log(0.5), curvature = 0.4, bw_noise = 0.08,
-    model_version = "TMM4",
     full_output = FALSE
     )
 

@@ -9,7 +9,6 @@ simulating(
   nsamples = 5000,
   true_pars = NULL,
   action_mode = c("executed", "imagined"),
-  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   bw_noise = NULL
 )
@@ -22,8 +21,6 @@ simulating(
 \item{true_pars}{Numeric, vector of "true" parameter values.}
 
 \item{action_mode}{Character, whether to simulate executed or imagined trials.}
-
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4").}
 
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
@@ -45,8 +42,7 @@ simulated_data <- simulating(
     nsims = 200,
     nsamples = 2000,
     true_pars = true_pars,
-    action_mode = "imagined",
-    model_version = "TMM4"
+    action_mode = "imagined"
     )
 }
 

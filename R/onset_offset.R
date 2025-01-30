@@ -1,6 +1,6 @@
 #' Finding onset and offset
 #'
-#' Finding onset and offset of the activation function (according to the model and some threshold).
+#' Finding onset and offset of the activation function (according to some threshold).
 #'
 #' @param peak_time Numeric, peak time of the activation function.
 #' @param curvature Numeric, curvature of the activation function.

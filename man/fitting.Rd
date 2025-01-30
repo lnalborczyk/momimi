@@ -16,7 +16,6 @@ fitting(
   rt_contraints = c(0.1, 2),
   mt_contraints = c(0.1, 2),
   error_function = c("g2", "rmse", "sse", "wsse", "ks"),
-  model_version = c("TMM3", "TMM4"),
   uncertainty = c("par_level", "func_level", "diffusion"),
   method = c("SANN", "GenSA", "pso", "DEoptim", "Nelder-Mead", "BFGS", "L-BFGS-B",
     "bobyqa", "nlminb", "all_methods", "optimParallel", "grid_search"),
@@ -49,8 +48,6 @@ fitting(
 
 \item{error_function}{Character, error function to be used when fitting the model.}
 
-\item{model_version}{Character, threshold modulation model ("TMM3" or "TMM4").}
-
 \item{uncertainty}{Numeric, indicates how noise is introduced in the system.}
 
 \item{method}{Character, optimisation method (DEoptim seems to work best).}
@@ -79,8 +76,7 @@ simulated_data <- simulating(
     nsims = 200,
     nsamples = 2000,
     true_pars = true_pars,
-    action_mode = "imagined",
-    model_version = "TMM4"
+    action_mode = "imagined"
     )
 
 # fitting the model
@@ -90,7 +86,6 @@ results <- fitting(
     nsims = 200,
     error_function = "g2",
     method = "DEoptim",
-    model_version = "TMM4",
     lower_bounds = c(0, 0.25, 0.1, 1),
     upper_bounds = c(2, 1.25, 0.6, 2),
     initial_pop_constraints = TRUE,

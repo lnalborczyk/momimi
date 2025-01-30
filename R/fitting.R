@@ -13,7 +13,6 @@
 #' @param rt_contraints Numeric, vector of length 2 specifying the min and max RT (in seconds).
 #' @param mt_contraints Numeric, vector of length 2 specifying the min and max MT (in seconds).
 #' @param error_function Character, error function to be used when fitting the model.
-#' @param model_version Character, threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param method Character, optimisation method (DEoptim seems to work best).
 #' @param cluster Character, existing parallel cluster object. If provided, overrides + specified parallelType.
@@ -36,8 +35,7 @@
 #'     nsims = 200,
 #'     nsamples = 2000,
 #'     true_pars = true_pars,
-#'     action_mode = "imagined",
-#'     model_version = "TMM4"
+#'     action_mode = "imagined"
 #'     )
 #'
 #' # fitting the model
@@ -47,7 +45,6 @@
 #'     nsims = 200,
 #'     error_function = "g2",
 #'     method = "DEoptim",
-#'     model_version = "TMM4",
 #'     lower_bounds = c(0, 0.25, 0.1, 1),
 #'     upper_bounds = c(2, 1.25, 0.6, 2),
 #'     initial_pop_constraints = TRUE,
@@ -72,7 +69,6 @@ fitting <- function (
         initial_pop_constraints = FALSE,
         rt_contraints = c(0.1, 2), mt_contraints = c(0.1, 2),
         error_function = c("g2", "rmse", "sse", "wsse", "ks"),
-        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         method = c(
             "SANN", "GenSA", "pso", "DEoptim",
@@ -87,15 +83,7 @@ fitting <- function (
     # defining parameter names according to the chosen model (if null)
     if (is.null(par_names) ) {
 
-        if (model_version == "TMM3") {
-
-            par_names <- c("exec_threshold", "peak_time", "curvature")
-
-         } else if (model_version == "TMM4") {
-
-             par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
-
-        }
+        par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
 
     }
 
@@ -104,16 +92,13 @@ fitting <- function (
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nstudies must be a numeric..." = is.numeric(nstudies) )
 
-    # testing whether only 3 or 4 pars have been specified
-    stopifnot("par_names must be a numeric of length 3 or 4..." = length(par_names) %in% c(3, 4) )
-    stopifnot("lower_bounds must be a numeric of length 3 or 4..." = length(lower_bounds) %in% c(3, 4) )
-    stopifnot("upper_bounds must be a numeric of length 3 or 4..." = length(upper_bounds) %in% c(3, 4) )
+    # testing whether 4 pars have been specified
+    stopifnot("par_names must be a numeric of length 4..." = length(par_names) == 4)
+    stopifnot("lower_bounds must be a numeric of length 4..." = length(lower_bounds) == 4)
+    stopifnot("upper_bounds must be a numeric of length 4..." = length(upper_bounds) == 4)
 
     # method should be one of above
     method <- match.arg(method)
-
-    # model_version should be one of above
-    model_version <- match.arg(model_version)
 
     # uncertainty should be one of above
     uncertainty <- match.arg(uncertainty)
@@ -126,7 +111,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             method = method,
             control = list(maxit = maxit, trace = 2)
@@ -139,7 +123,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             par = par,
             lower = lower_bounds,
@@ -155,7 +138,6 @@ fitting <- function (
             par = par,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -171,8 +153,8 @@ fitting <- function (
                 nstudies = nstudies,
                 action_mode = unique(data$action_mode),
                 par_names = par_names,
-                lower_bounds = lower_bounds, upper_bounds = upper_bounds,
-                model_version = model_version,
+                lower_bounds = lower_bounds,
+                upper_bounds = upper_bounds,
                 uncertainty = uncertainty,
                 rt_contraints = rt_contraints, mt_contraints = mt_contraints
                 )
@@ -203,7 +185,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -246,8 +227,9 @@ fitting <- function (
                 steptol = 1000,
                 # using all available cores
                 parallelType = "parallel",
-                # packages = c("DEoptim", "tidyverse", "tgp", "momimi")
+                # defining the package to be imported on each parallel core
                 packages = c("DEoptim", "dplyr", "tidyr", "tgp", "momimi"),
+                # defining the cluster
                 cluster = cluster
                 )
             )
@@ -263,7 +245,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             method = method,
             lower = lower_bounds,
@@ -279,7 +260,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -307,7 +287,6 @@ fitting <- function (
             data = data,
             nsims = nsims,
             error_function = error_function,
-            model_version = model_version,
             uncertainty = uncertainty,
             lower = lower_bounds,
             upper = upper_bounds,
@@ -322,26 +301,13 @@ fitting <- function (
         # using all available cores
         future::plan(future::multisession(workers = parallel::detectCores() ) )
 
-        if (model_version == "TMM3") {
-
-            # defining the grid of parameter values
-            parameters_grid <- tidyr::crossing(
-                a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
-                b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
-                c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution)
-                )
-
-        } else if (model_version == "TMM4") {
-
-            # defining the grid of parameter values
-            parameters_grid <- tidyr::crossing(
-                a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
-                b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
-                c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution),
-                d = seq(from = lower_bounds[4], to = upper_bounds[4], by = grid_resolution)
-                )
-
-        }
+        # defining the grid of parameter values
+        parameters_grid <- tidyr::crossing(
+            a = seq(from = lower_bounds[1], to = upper_bounds[1], by = grid_resolution),
+            b = seq(from = lower_bounds[2], to = upper_bounds[2], by = grid_resolution),
+            c = seq(from = lower_bounds[3], to = upper_bounds[3], by = grid_resolution),
+            d = seq(from = lower_bounds[4], to = upper_bounds[4], by = grid_resolution)
+            )
 
         # warning the user about the number of simulation to evaluate...
         message(
@@ -374,7 +340,7 @@ fitting <- function (
                     )
                 )
 
-        # explicitly close multisession workers by switching plan
+        # explicitly closing multisession workers by switching plan
         future::plan(future::sequential)
 
         # returning the error surface
@@ -392,7 +358,6 @@ plot.DEoptim_momimi <- function (
         x, original_data,
         method = c("ppc", "quantiles", "latent", "optimisation"),
         action_mode = c("executed", "imagined"),
-        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         nsims = 500, nsamples = 5000,
         max_rt = 5, max_mt = 5,
@@ -402,7 +367,6 @@ plot.DEoptim_momimi <- function (
     # matching arguments
     method <- match.arg(method)
     action_mode <- match.arg(action_mode)
-    model_version <- match.arg(model_version)
     uncertainty <- match.arg(uncertainty)
 
     # retrieving estimated pars
@@ -416,7 +380,6 @@ plot.DEoptim_momimi <- function (
             nsamples = nsamples,
             true_pars = estimated_pars,
             action_mode = action_mode,
-            model_version = model_version,
             uncertainty = uncertainty
             ) %>%
             # removing NAs or aberrant simulated data
@@ -445,7 +408,6 @@ plot.DEoptim_momimi <- function (
             nsamples = nsamples,
             true_pars = estimated_pars,
             action_mode = action_mode,
-            model_version = model_version,
             uncertainty = uncertainty
             ) %>%
             # removing NAs or aberrant simulated data
@@ -486,128 +448,63 @@ plot.DEoptim_momimi <- function (
 
     } else if (method == "latent") {
 
-        if (model_version == "TMM3") {
+        par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
 
-            par_names <- c("exec_threshold", "peak_time", "curvature")
+        parameters_estimates_summary <- paste(as.vector(rbind(
+            paste0(par_names, ": "),
+            paste0(as.character(round(estimated_pars, 3) ), "\n")
+            ) ), collapse = "") %>% stringr::str_sub(end = -2)
 
-            parameters_estimates_summary <- paste(as.vector(rbind(
-                paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
-                ) ), collapse = "") %>% stringr::str_sub(end = -2)
-
-            model(
-                nsims = nsims,
-                nsamples = nsamples,
-                exec_threshold = estimated_pars[1],
-                imag_threshold = 0.5 * estimated_pars[1],
-                peak_time = log(estimated_pars[2]),
-                curvature = estimated_pars[3],
-                bw_noise = 0.1,
-                model_version = "TMM3",
-                full_output = TRUE
-                ) %>%
-                tidyr::pivot_longer(cols = .data$activation) %>%
-                ggplot2::ggplot(
-                    ggplot2::aes(
-                        x = .data$time, y = .data$value,
-                        group = interaction(.data$sim, .data$name)
-                        )
-                    ) +
-                # plotting the motor execution and motor imagery thresholds
-                ggplot2::geom_hline(
-                    yintercept = estimated_pars[1],
-                    linetype = 2
-                    ) +
-                ggplot2::geom_hline(
-                    yintercept = 0.5 * estimated_pars[1],
-                    linetype = 2
-                    ) +
-                # plotting average
-                ggplot2::stat_summary(
-                    ggplot2::aes(group = .data$name),
-                    fun = "median", geom = "line",
-                    linewidth = 1, alpha = 1,
-                    show.legend = FALSE
-                    ) +
-                # displaying estimated parameter values
-                ggplot2::annotate(
-                    geom = "label",
-                    x = Inf, y = Inf,
-                    hjust = 1, vjust = 1,
-                    label = parameters_estimates_summary,
-                    family = "Courier"
-                    ) +
-                ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
-                ggplot2::labs(
-                    title = "Latent activation function",
-                    x = "Time within a trial (s)",
-                    y = "Activation (a.u.)",
-                    colour = "",
-                    fill = ""
+        model(
+            nsims = nsims,
+            nsamples = nsamples,
+            exec_threshold = estimated_pars[1],
+            imag_threshold = 0.5 * estimated_pars[1],
+            peak_time = log(estimated_pars[2]),
+            curvature = estimated_pars[3],
+            bw_noise = estimated_pars[4],
+            uncertainty = uncertainty,
+            full_output = TRUE
+            ) %>%
+            tidyr::pivot_longer(cols = .data$activation) %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
+                    x = .data$time, y = .data$value,
+                    group = interaction(.data$sim, .data$name)
                     )
-
-        } else if (model_version == "TMM4") {
-
-            par_names <- c("exec_threshold", "peak_time", "curvature", "bw_noise")
-
-            parameters_estimates_summary <- paste(as.vector(rbind(
-                paste0(par_names, ": "),
-                paste0(as.character(round(estimated_pars, 3) ), "\n")
-                ) ), collapse = "") %>% stringr::str_sub(end = -2)
-
-            model(
-                nsims = nsims,
-                nsamples = nsamples,
-                exec_threshold = estimated_pars[1],
-                imag_threshold = 0.5 * estimated_pars[1],
-                peak_time = log(estimated_pars[2]),
-                curvature = estimated_pars[3],
-                bw_noise = estimated_pars[4],
-                model_version = "TMM4",
-                uncertainty = uncertainty,
-                full_output = TRUE
-                ) %>%
-                tidyr::pivot_longer(cols = .data$activation) %>%
-                ggplot2::ggplot(
-                    ggplot2::aes(
-                        x = .data$time, y = .data$value,
-                        group = interaction(.data$sim, .data$name)
-                        )
-                    ) +
-                # plotting the motor execution and motor imagery thresholds
-                ggplot2::geom_hline(
-                    yintercept = estimated_pars[1],
-                    linetype = 2
-                    ) +
-                ggplot2::geom_hline(
-                    yintercept = 0.5 * estimated_pars[1],
-                    linetype = 2
-                    ) +
-                # plotting average
-                ggplot2::stat_summary(
-                    ggplot2::aes(group = .data$name),
-                    fun = "median", geom = "line",
-                    linewidth = 1, alpha = 1,
-                    show.legend = FALSE
-                    ) +
-                # displaying estimated parameter values
-                ggplot2::annotate(
-                    geom = "label",
-                    x = Inf, y = Inf,
-                    hjust = 1, vjust = 1,
-                    label = parameters_estimates_summary,
-                    family = "Courier"
-                    ) +
-                ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
-                ggplot2::labs(
-                    title = "Latent activation function",
-                    x = "Time within a trial (s)",
-                    y = "Activation (a.u.)",
-                    colour = "",
-                    fill = ""
-                    )
-
-        }
+                ) +
+            # plotting the motor execution and motor imagery thresholds
+            ggplot2::geom_hline(
+                yintercept = estimated_pars[1],
+                linetype = 2
+                ) +
+            ggplot2::geom_hline(
+                yintercept = 0.5 * estimated_pars[1],
+                linetype = 2
+                ) +
+            # plotting average
+            ggplot2::stat_summary(
+                ggplot2::aes(group = .data$name),
+                fun = "median", geom = "line",
+                linewidth = 1, alpha = 1,
+                show.legend = FALSE
+                ) +
+            # displaying estimated parameter values
+            ggplot2::annotate(
+                geom = "label",
+                x = Inf, y = Inf,
+                hjust = 1, vjust = 1,
+                label = parameters_estimates_summary,
+                family = "Courier"
+                ) +
+            ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
+            ggplot2::labs(
+                title = "Latent activation function",
+                x = "Time within a trial (s)",
+                y = "Activation (a.u.)",
+                colour = "",
+                fill = ""
+                )
 
     } else if (method == "optimisation") {
 

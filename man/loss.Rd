@@ -2,14 +2,13 @@
 % Please edit documentation in R/loss.R
 \name{loss}
 \alias{loss}
-\title{Loss functions}
+\title{Loss function}
 \usage{
 loss(
   par,
   data,
   nsims = NULL,
   nsamples = 5000,
-  model_version = c("TMM3", "TMM4"),
   exec_threshold = 1,
   imag_threshold = 0.5,
   uncertainty = c("par_level", "func_level", "diffusion"),
@@ -27,8 +26,6 @@ loss(
 
 \item{nsamples}{Numeric, number of samples (time steps) within a trial.}
 
-\item{model_version}{Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").}
-
 \item{exec_threshold}{motor execution threshold.}
 
 \item{imag_threshold}{motor imagery threshold.}
@@ -45,7 +42,7 @@ loss(
 The loss/error for a given set of observations.
 }
 \description{
-Provides possible loss functions for the two versions of the model.
+Provides the loss function for the model.
 }
 \author{
 Ladislas Nalborczyk \email{ladislas.nalborczyk@gmail.com}.

@@ -1,6 +1,6 @@
 #' Models of motor inhibition during motor imagery
 #'
-#' Simulating data from the "threshold modulation model" (TMM).
+#' Simulating data from the "threshold modulation model" (TMM) of motor imagery.
 #'
 #' @param nsims Numeric, number of simulations (observations/trials).
 #' @param nsamples Numeric, number of samples (time steps) within a trial.
@@ -9,9 +9,8 @@
 #' @param peak_time Numeric, peak time of the activation function.
 #' @param curvature Numeric, curvature of the activation function.
 #' @param bw_noise Numeric, amount of between-trial noise.
-#' @param model_version Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
-#' @param full_output Boolean, indicating whether activ/inhib curves should be returned.
+#' @param full_output Boolean, indicating whether activation curves should be returned.
 #' @param time_step Numeric, time step used to numerical approximation.
 #'
 #' @return A dataframe containing observation (i.e., RTs and MTs) and/or values of the underlying functions at each time step.
@@ -27,7 +26,6 @@
 #'     nsims = 100, nsamples = 2000,
 #'     exec_threshold = 1, imag_threshold = 0.5,
 #'     peak_time = log(0.5), curvature = 0.4, bw_noise = 0.08,
-#'     model_version = "TMM4",
 #'     full_output = FALSE
 #'     )
 #'
@@ -42,10 +40,11 @@
 model <- function (
         nsims = 100,
         nsamples = 5000,
-        exec_threshold = 1, imag_threshold = 0.5,
-        peak_time = 0, curvature = 0.4,
+        exec_threshold = 1,
+        imag_threshold = 0.5,
+        peak_time = 0,
+        curvature = 0.6,
         bw_noise = NULL,
-        model_version = c("TMM3", "TMM4"),
         uncertainty = c("par_level", "func_level", "diffusion"),
         full_output = FALSE,
         time_step = 0.001
@@ -54,9 +53,6 @@ model <- function (
     # some tests for variable types
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
-
-    # model_version should be one of above
-    model_version <- match.arg(model_version)
 
     # uncertainty should be one of above
     uncertainty <- match.arg(uncertainty)
@@ -90,23 +86,13 @@ model <- function (
                     time_step = time_step
                     )
                 ) %>%
-            # dplyr::mutate(
-            #     inhibition = activation(
-            #         time = .data$time,
-            #         peak_time = peak_time_inhib,
-            #         curvature = curvature_inhib,
-            #         uncertainty = uncertainty,
-            #         bw_noise = bw_noise,
-            #         time_step = time_step
-            #         )
-            #     ) %>%
             # numerically finding the onset (RT) and offset
-            dplyr::mutate(onset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_exec = which(.data$balance >= .data$exec_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
             # MT is defined as offset minus onset
             dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-            dplyr::mutate(onset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::first() ) %>%
-            dplyr::mutate(offset_imag = which(.data$balance >= .data$imag_threshold) %>% dplyr::last() ) %>%
             dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
             # convert from ms to seconds
             dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
@@ -126,8 +112,7 @@ model <- function (
                 curvature = 0.4, bw_noise = 0.1
                 ) {
 
-                # adding some variability in the other parameters
-                # variability is currently fixed but could also be estimated
+                # adding some variability in the peak time and curvature parameters
                 peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
                 curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
@@ -206,10 +191,10 @@ model <- function (
                     # numerically finding the onset (RT) and offset
                     dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
                     dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
-                    # MT is defined as offset minus onset
-                    dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
                     dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
                     dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+                    # MT is defined as offset minus onset
+                    dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
                     dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
                     # convert from ms to seconds
                     dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
@@ -239,13 +224,11 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
     if (method == "functions") {
 
         x %>%
-            # tidyr::pivot_longer(., cols = .data$activation) %>%
-            tidyr::pivot_longer(., cols = .data$balance) %>%
+            tidyr::pivot_longer(., cols = .data$activation) %>%
             ggplot2::ggplot(
                 ggplot2::aes(
                     x = .data$time, y = .data$value,
                     group = interaction(.data$sim, .data$name)
-                    # colour = .data$name
                     )
                 ) +
             # plotting the motor execution and motor imagery thresholds
@@ -274,7 +257,6 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 fun = "median", geom = "line",
                 colour = "black",
                 linewidth = 1, alpha = 1,
-                # show.legend = multiple_functions
                 show.legend = FALSE
                 ) +
             # ggplot2::ylim(c(0, 1.5) ) +

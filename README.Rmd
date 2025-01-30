@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -20,14 +22,14 @@ knitr::opts_chunk$set(
 [![GitHub repo size](https://img.shields.io/github/repo-size/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 [![GitHub last update](https://img.shields.io/github/last-commit/lnalborczyk/momimi?color=brightgreen&logo=github)](https://github.com/lnalborczyk/momimi)
 
-The `momimi` package implements different versions of the "threshold modulation model" (TMM3/TMM4) of motor imagery and provides fitting and plotting utilities.
+The `momimi` package implements the "threshold modulation model" (TMM) of motor imagery and provides fitting and plotting utilities in `R`.
     
 ## Installation
 
 You can install the latest stable version of the package from GitHub with:
 
 ```{r installing, eval = FALSE}
-# install.packages("devtools")
+# if needed, install.packages("devtools")
 devtools::install_github(repo = "lnalborczyk/momimi", build_vignettes = TRUE)
 ```
 
@@ -35,7 +37,7 @@ devtools::install_github(repo = "lnalborczyk/momimi", build_vignettes = TRUE)
 
 ### Simulating and plotting data
 
-We start by simulating some data (here, 100 observations or RTs and MTs).
+We start by simulating some data (here, 100 observations or RTs and MTs) given some values for the model's parameters.
 
 ```{r simulating1}
 library(tidyverse)
@@ -45,37 +47,35 @@ simulated_data <- model(
     nsims = 100, nsamples = 2000,
     exec_threshold = 1.1, imag_threshold = 0.55,
     peak_time = log(0.5), curvature = 0.5,
-    model_version = "TMM3",
     full_output = TRUE
     )
 ```
 
-We can plot the underlying activation function and the implied distributions of RTs and MTs.
+We can plot the underlying activation function and the simulated distributions of RTs and MTs.
 
-```{r plotting}
-# plotting only the latent function(s)
+```{r plotting, warning = FALSE}
+# plotting the latent activation function
 plot(x = simulated_data, method = "functions")
 
-# plotting only the distributions of RTs/MTs distributions
+# plotting the distributions of RTs/MTs
 plot(x = simulated_data, method = "distributions")
 ```
 
 ### Fitting the models
 
-We can also use the model to generate realistic data from known parameter values and then fit the model (below, the 3-parameter version of the TMM) to these data to try recovering the original parameter values.
+We can also use the model to generate realistic data from known parameter values and then fit the model to these data to try recovering the original parameter values.
 
 ```{r simulating2}
-# plausible "true" parameter values in the TMM3
-# parameters are the motor execution threshold, the peak time, and the curvature
-true_pars <- c(1.1, 0.5, 0.4)
+# defining plausible "true" parameter values:
+# the motor execution threshold, peak time, curvature, and between-trial variability (SD)
+true_pars <- c(1.1, 0.5, 0.4, 0.1)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
     nsims = 200,
     nsamples = 3000,
     true_pars = true_pars,
-    action_mode = "imagined",
-    model_version = "TMM3"
+    action_mode = "imagined"
     )
 
 # displaying the first ten rows of these data
@@ -84,21 +84,30 @@ head(x = simulated_data, n = 10)
 
 We fit the model and use realistic constraints (e.g., the RT/MT should be no less than 0.1s and no more than 2 seconds) on the initial parameter values (by setting `initial_pop_constraints = TRUE`) to facilitate convergence (fitting can take a while).
 
-```{r fitting, results = "hide"}
+```{r fitting, results = "hide", warning = FALSE}
 # fitting the model
 results <- fitting(
+    # the data used to fit the model
     data = simulated_data,
+    # the number of simulated trials in the model
     nsims = 200,
+    # the g2 cost function is also used with the DDM
     error_function = "g2",
+    # DEoptim seems the most efficient approach
     method = "DEoptim",
-    model_version = "TMM3",
-    lower_bounds = c(1.0, 0.3, 0.2),
-    upper_bounds = c(1.4, 0.7, 0.6),
+    # lower and upper bounds for the parameters values
+    # NB: one can fix (i.e., not estimate) a parameter 
+    # by setting the lower and upper bounds to the same value
+    lower_bounds = c(1.0, 0.3, 0.4, 0.05),
+    upper_bounds = c(1.4, 0.7, 0.4, 0.20),
+    # should we generate sensible starting values?
     initial_pop_constraints = TRUE,
     nstudies = 200,
+    # which constraints?
     rt_contraints = range(simulated_data$reaction_time),
     mt_contraints = range(simulated_data$movement_time),
-    maxit = 100
+    # maximum number of iteration when fitting the model (to be increased)
+    maxit = 10
     )
 ```
 
@@ -107,11 +116,11 @@ results <- fitting(
 summary(results)
 ```
 
-We can then plot the underlying (latent) function(s). Note that this returns a `ggplot2` object that can be subsequently modified.
+We can then plot the underlying (latent) activation function. Note that this returns a `ggplot2` object that can be subsequently modified.
 
 ```{r latent}
-plot(x = results, method = "latent", model_version = "TMM3") +
-    labs(title = "Example of latent activation function")
+plot(x = results, method = "latent") +
+    labs(title = "Estimated latent activation function")
 ```
 
 We can also do "predictive checks" by comparing the data used to fit the model to data simulated from the model using the estimated parameter values.
@@ -119,7 +128,7 @@ We can also do "predictive checks" by comparing the data used to fit the model t
 ```{r ppc}
 plot(
     x = results, original_data = simulated_data,
-    method = "ppc", model_version = "TMM3", action_mode = "imagined"
+    method = "ppc", action_mode = "imagined"
     )
 ```
 
@@ -128,7 +137,7 @@ We can also do another form of "predictive check" by comparing the quantile valu
 ```{r quantiles, out.width = "100%"}
 plot(
     x = results, original_data = simulated_data,
-    method = "quantiles", model_version = "TMM3", action_mode = "imagined"
+    method = "quantiles", action_mode = "imagined"
     )
 ```
 

@@ -1,12 +1,11 @@
-#' Loss functions
+#' Loss function
 #'
-#' Provides possible loss functions for the two versions of the model.
+#' Provides the loss function for the model.
 #'
 #' @param par Numeric, vector of parameter values.
 #' @param data Dataframe, data to be used for computing the error.
 #' @param nsims Numeric, number of simulations (observations/trials).
 #' @param nsamples Numeric, number of samples (time steps) within a trial.
-#' @param model_version Character, 3-par or 4-par threshold modulation model ("TMM3" or "TMM4").
 #' @param uncertainty Numeric, indicates how noise is introduced in the system.
 #' @param time_step Numeric, time step used to numerical approximation.
 #' @param diffusion_coef Numeric, diffusion coefficient.
@@ -28,7 +27,6 @@ loss <- function (
         par, data,
         nsims = NULL,
         nsamples = 5000,
-        model_version = c("TMM3", "TMM4"),
         exec_threshold = 1,
         imag_threshold = 0.5,
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -42,9 +40,6 @@ loss <- function (
     stopifnot("nsims must be a numeric..." = is.numeric(nsims) )
     stopifnot("nsamples must be a numeric..." = is.numeric(nsamples) )
 
-    # model_version should be one of above
-    model_version <- match.arg(model_version)
-
     # uncertainty should be one of above
     uncertainty <- match.arg(uncertainty)
 
@@ -54,226 +49,199 @@ loss <- function (
     # how many trials should we simulate? if null, by default nrow(data)
     if (is.null(nsims) ) nsims <- as.numeric(nrow(data) )
 
-    # what version of the model?
-    if (model_version %in% c("TMM3", "TMM4") ) {
+    # retrieving parameter values for the activation function
+    peak_time <- log(par[[2]])
+    curvature <- par[[3]]
 
-        if (model_version == "TMM3") {
+    # retrieving parameter values for the execution threshold
+    exec_threshold <- par[[1]]
 
-            # retrieving parameter values for the activation function
-            peak_time <- log(par[[2]])
-            curvature <- par[[3]]
+    # defining imagery threshold relative to execution threshold
+    imag_threshold <- imag_threshold * exec_threshold
 
-            # trying out the normalised lognormal distribution
-            # amplitude_activ <- 1 / (peak_time_activ * curvature_activ * sqrt(2 * pi) )
+    # retrieving the amount of between-trial variability
+    bw_noise <- par[[4]]
 
-            # retrieving parameter values for the execution threshold
-            exec_threshold <- par[[1]]
+    ################################################################################
+    # adding some constraints
+    # ----------------------------------------------------------------------------
+    # predicted RTs/MTs should be valid (not a NaN)
+    # imagery threshold cannot be higher than execution threshold
+    # max activation should not be above exec_threshold in imagined trials
+    ##############################################################################
 
-            # defining imagery threshold relative to execution threshold
-            imag_threshold <- imag_threshold * exec_threshold
+    # defining the activation/inhibition rescaled lognormal function
+    activation_function <- function (
+    exec_threshold = 1, imag_threshold = 0.5,
+    amplitude = 1.5, peak_time = 0, curvature = 0.4,
+    bw_noise = 0.1
+    ) {
 
-            # defining the amount of between-trial noise
-            bw_noise <- 0.1
+        # adding some variability in the parameters
+        peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
+        curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
 
-        } else if (model_version == "TMM4") {
+        # no variability in the motor execution and motor imagery thresholds
+        exec_threshold_sim <- exec_threshold
+        imag_threshold_sim <- imag_threshold
 
-            # retrieving parameter values for the activation function
-            peak_time <- log(par[[2]])
-            curvature <- par[[3]]
+        # computing the predicted RT and MT in imagery
+        onset_offset_imag <- onset_offset(
+            peak_time = peak_time_sim,
+            curvature = curvature_sim,
+            thresh = imag_threshold_sim
+            )
 
-            # retrieving parameter values for the execution threshold
-            exec_threshold <- par[[1]]
+        onset_imag <- min(onset_offset_imag)
+        mt_imag <- max(onset_offset_imag) - min(onset_offset_imag)
 
-            # defining imagery threshold relative to execution threshold
-            imag_threshold <- imag_threshold * exec_threshold
+        # computing the predicted RT and MT in execution
+        onset_offset_exec <- onset_offset(
+            peak_time = peak_time_sim,
+            curvature = curvature_sim,
+            thresh = exec_threshold_sim
+            )
 
-            # retrieving the amount of between-trial variability
-            bw_noise <- par[[4]]
+        onset_exec <- min(onset_offset_exec)
+        mt_exec <- max(onset_offset_exec) - min(onset_offset_exec)
 
-        }
+        # returning it
+        return (data.frame(onset_imag, mt_imag, onset_exec, mt_exec) )
 
-        ################################################################################
-        # adding some constraints
-        # ----------------------------------------------------------------------------
-        # predicted RTs/MTs should be valid (not a NaN)
-        # imagery threshold cannot be higher than execution threshold
-        # balance max should not be above exec_threshold in imagined trials
-        ##############################################################################
+    }
 
-        # defining the activation/inhibition rescaled lognormal function
-        activation_function <- function (
-        exec_threshold = 1, imag_threshold = 0.5,
-        amplitude = 1.5, peak_time = 0, curvature = 0.4,
-        bw_noise = 0.1
-        ) {
+    # computing the predicted RT and MT
+    if (uncertainty == "par_level") {
 
-            # adding some variability in the parameters
-            peak_time_sim <- stats::rnorm(n = 1, mean = peak_time, sd = bw_noise)
-            curvature_sim <- stats::rnorm(n = 1, mean = curvature, sd = bw_noise)
+        predicted_rt_mt <- suppressWarnings(activation_function(
+            peak_time = peak_time,
+            curvature = curvature,
+            exec_threshold = exec_threshold,
+            imag_threshold = imag_threshold,
+            bw_noise = bw_noise
+            ) )
 
-            # no variability in the motor execution and motor imagery thresholds
-            exec_threshold_sim <- exec_threshold
-            imag_threshold_sim <- imag_threshold
+    } else {
 
-            # computing the predicted RT and MT in imagery
-            onset_offset_imag <- onset_offset(
-                peak_time = peak_time_sim,
-                curvature = curvature_sim,
-                thresh = imag_threshold_sim
-                )
-
-            onset_imag <- min(onset_offset_imag)
-            mt_imag <- max(onset_offset_imag) - min(onset_offset_imag)
-
-            # computing the predicted RT and MT in execution
-            onset_offset_exec <- onset_offset(
-                peak_time = peak_time_sim,
-                curvature = curvature_sim,
-                thresh = exec_threshold_sim
-                )
-
-            onset_exec <- min(onset_offset_exec)
-            mt_exec <- max(onset_offset_exec) - min(onset_offset_exec)
-
-            # returning it
-            return (data.frame(onset_imag, mt_imag, onset_exec, mt_exec) )
-
-        }
-
-        # computing the predicted RT and MT
-        if (uncertainty == "par_level") {
-
-            predicted_rt_mt <- suppressWarnings(activation_function(
-                peak_time = peak_time,
-                curvature = curvature,
-                exec_threshold = exec_threshold,
-                imag_threshold = imag_threshold,
-                bw_noise = bw_noise
-                ) )
-
-        } else {
-
-            # computing the activation/inhibition balance and
-            # implied distributions of RTs and MTs per simulation
-            predicted_rt_mt <- data.frame(
-                time = 1:nsamples * time_step,
-                exec_threshold = exec_threshold,
-                imag_threshold = imag_threshold
+        # computing the activation and
+        # implied distributions of RTs and MTs per simulation
+        predicted_rt_mt <- data.frame(
+            time = 1:nsamples * time_step,
+            exec_threshold = exec_threshold,
+            imag_threshold = imag_threshold
+            ) %>%
+            dplyr::mutate(
+                activation = activation(
+                    time = .data$time,
+                    peak_time = peak_time,
+                    curvature = curvature,
+                    uncertainty = uncertainty,
+                    bw_noise = bw_noise,
+                    time_step = time_step,
+                    diffusion_coef = diffusion_coef
+                    )
                 ) %>%
-                dplyr::mutate(
-                    activation = activation(
-                        time = .data$time,
+            # numerically finding the activation onset (RT) and offset
+            dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+            # MT is defined as offset minus onset
+            dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
+            dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
+            # convert from ms to seconds
+            dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
+            dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
+            dplyr::distinct()
+
+    }
+
+    if (unique(data$action_mode) == "imagined") {
+
+        predicted_rt_mt <- predicted_rt_mt[1:2]
+
+    } else if (unique(data$action_mode) == "executed") {
+
+        predicted_rt_mt <- predicted_rt_mt[3:4]
+
+    }
+
+    # coding the constraints (penalising by setting the prediction error to +Inf)
+    if (any(is.na(predicted_rt_mt) ) ) {
+
+        prediction_error <- Inf
+        return (prediction_error)
+
+    } else if (imag_threshold >= exec_threshold) {
+
+        prediction_error <- Inf
+        return (prediction_error)
+
+    } else if (unique(data$action_mode) == "imagined" & !is.na(peak_time) & peak_time >= exec_threshold) {
+
+        prediction_error <- Inf
+        return (prediction_error)
+
+    }
+
+    # simulating some data
+    # if uncertainty = "par_level", we can compute RT/MT analytically
+    if (uncertainty == "par_level") {
+
+        results <- data.frame(
+            sim = rep(1:nsims, each = nsamples),
+            exec_threshold = exec_threshold,
+            imag_threshold = imag_threshold
+            ) %>%
+            dplyr::group_by(.data$sim) %>%
+            dplyr::do(
+                suppressWarnings(
+                    activation_function(
                         peak_time = peak_time,
                         curvature = curvature,
-                        uncertainty = uncertainty,
-                        bw_noise = bw_noise,
-                        time_step = time_step,
-                        diffusion_coef = diffusion_coef
+                        exec_threshold = .data$exec_threshold,
+                        imag_threshold = .data$imag_threshold,
+                        bw_noise = bw_noise
                         )
-                    ) %>%
-                # numerically finding the balance's onset (RT) and offset
-                dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
-                dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
-                # MT is defined as offset minus onset
-                dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-                dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
-                dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
-                dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
-                # convert from ms to seconds
-                dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
-                dplyr::select(.data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
-                dplyr::distinct()
-
-        }
-
-        if (unique(data$action_mode) == "imagined") {
-
-            predicted_rt_mt <- predicted_rt_mt[1:2]
-
-        } else if (unique(data$action_mode) == "executed") {
-
-            predicted_rt_mt <- predicted_rt_mt[3:4]
-
-        }
-
-        # coding the constraints (penalising by setting the prediction error to +Inf)
-        if (any(is.na(predicted_rt_mt) ) ) {
-
-            prediction_error <- Inf
-            return (prediction_error)
-
-        } else if (imag_threshold >= exec_threshold) {
-
-            prediction_error <- Inf
-            return (prediction_error)
-
-        } else if (unique(data$action_mode) == "imagined" & !is.na(peak_time) & peak_time >= exec_threshold) {
-
-            prediction_error <- Inf
-            return (prediction_error)
-
-        }
-
-        # simulating some data
-        # if uncertainty = "par_level", we can compute RT/MT analytically
-        if (uncertainty == "par_level") {
-
-            results <- data.frame(
-                sim = rep(1:nsims, each = nsamples),
-                exec_threshold = exec_threshold,
-                imag_threshold = imag_threshold
+                    )
                 ) %>%
-                dplyr::group_by(.data$sim) %>%
-                dplyr::do(
-                    suppressWarnings(
-                        activation_function(
-                            peak_time = peak_time,
-                            curvature = curvature,
-                            exec_threshold = .data$exec_threshold,
-                            imag_threshold = .data$imag_threshold,
-                            bw_noise = bw_noise
-                            )
-                        )
-                    ) %>%
-                dplyr::ungroup()
+            dplyr::ungroup()
 
-        # if uncertainty != "par_level", we need to compute RT/MT numerically
-        } else {
+    # if uncertainty != "par_level", we need to compute RT/MT numerically
+    } else {
 
-            results <- data.frame(
-                sim = rep(1:nsims, each = nsamples),
-                sample = rep(1:nsamples, nsims),
-                time = rep(1:nsamples, nsims) * time_step,
-                exec_threshold = exec_threshold,
-                imag_threshold = imag_threshold
+        results <- data.frame(
+            sim = rep(1:nsims, each = nsamples),
+            sample = rep(1:nsamples, nsims),
+            time = rep(1:nsamples, nsims) * time_step,
+            exec_threshold = exec_threshold,
+            imag_threshold = imag_threshold
+            ) %>%
+            dplyr::group_by(.data$sim) %>%
+            dplyr::mutate(
+                activation = activation(
+                    time = .data$time,
+                    peak_time = peak_time,
+                    curvature = curvature,
+                    uncertainty = uncertainty,
+                    bw_noise = bw_noise,
+                    time_step = time_step,
+                    diffusion_coef = diffusion_coef
+                    )
                 ) %>%
-                dplyr::group_by(.data$sim) %>%
-                dplyr::mutate(
-                    activation = activation(
-                        time = .data$time,
-                        peak_time = peak_time,
-                        curvature = curvature,
-                        uncertainty = uncertainty,
-                        bw_noise = bw_noise,
-                        time_step = time_step,
-                        diffusion_coef = diffusion_coef
-                        )
-                    ) %>%
-                # numerically finding the balance's onset (RT) and offset
-                dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
-                dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
-                # MT is defined as offset minus onset
-                dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
-                dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
-                dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
-                dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
-                # convert from ms to seconds
-                dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
-                dplyr::ungroup() %>%
-                dplyr::select(.data$sim, .data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
-                dplyr::distinct()
-
-        }
+            # numerically finding the activation onset (RT) and offset
+            dplyr::mutate(onset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_exec = which(.data$activation >= .data$exec_threshold) %>% dplyr::last() ) %>%
+            # MT is defined as offset minus onset
+            dplyr::mutate(mt_exec = .data$offset_exec - .data$onset_exec) %>%
+            dplyr::mutate(onset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::first() ) %>%
+            dplyr::mutate(offset_imag = which(.data$activation >= .data$imag_threshold) %>% dplyr::last() ) %>%
+            dplyr::mutate(mt_imag = .data$offset_imag - .data$onset_imag) %>%
+            # convert from ms to seconds
+            dplyr::mutate(dplyr::across(.data$onset_exec:.data$mt_imag, ~ . * time_step) ) %>%
+            dplyr::ungroup() %>%
+            dplyr::select(.data$sim, .data$onset_imag, .data$mt_imag, .data$onset_exec, .data$mt_exec) %>%
+            dplyr::distinct()
 
     }
 

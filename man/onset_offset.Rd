@@ -17,7 +17,7 @@ onset_offset(peak_time = 0.5, curvature = 0.4, thresh = 0.5)
 A vector containing the onset (i.e., the lowest value above the threshold) and the offset (i.e., the highest value above the threshold).
 }
 \description{
-Finding onset and offset of the activation function (according to the model and some threshold).
+Finding onset and offset of the activation function (according to some threshold).
 }
 \examples{
 \dontrun{
