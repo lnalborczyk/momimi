@@ -17,15 +17,19 @@
 #' @examples
 #' \dontrun{
 #' # plausible "true" parameter values in the TMM
-#' true_pars <- c(1.1, 0.5, 0.3, 1.25)
+#' # parameters are the motor execution threshold, the peak time,
+#' # curvature, and between-trial variability
+#' true_pars <- c(1.2, 0.5, 0.5, 0.06)
 #'
 #' # simulating data using these parameter values
 #' simulated_data <- simulating(
 #'     nsims = 200,
-#'     nsamples = 2000,
 #'     true_pars = true_pars,
 #'     action_mode = "imagined"
 #'     )
+#'
+#' # plotting the simulated data
+#' plot(simulated_data)
 #' }
 #'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
@@ -34,7 +38,7 @@
 
 simulating <- function (
         nsims = 100,
-        nsamples = 5000,
+        nsamples = 3000,
         true_pars = NULL,
         action_mode = c("executed", "imagined"),
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -89,24 +93,45 @@ simulating <- function (
 
 plot.momimi_sim <- function (x, ...) {
 
+    optimal_bw <- x %>%
+        tidyr::pivot_longer(cols = c(.data$reaction_time, .data$movement_time) ) %>%
+        dplyr::pull(.data$value) %>%
+        stats::bw.nrd()
+
     x %>%
         tidyr::pivot_longer(cols = c(.data$reaction_time, .data$movement_time) ) %>%
         ggplot2::ggplot(
             ggplot2::aes(
-                x = .data$value, group = .data$name,
-                colour = .data$name, fill = .data$name
+                x = .data$value,
+                group = .data$name,
+                colour = .data$name,
+                fill = .data$name
                 )
             ) +
-        ggplot2::geom_density(
-            color = "white",
+        ggplot2::geom_histogram(
+            position = "identity",
             alpha = 0.6,
-            adjust = 5,
+            show.legend = FALSE,
+            colour = "white",
+            binwidth = optimal_bw
+            ) +
+        ggplot2::geom_label(
+            data = . %>% dplyr::summarise(rt_mt_median = median(.data$value), .by = .data$name),
+            ggplot2::aes(
+                x = .data$rt_mt_median, y = 0,
+                label = round(.data$rt_mt_median, 3),
+                fill = .data$name
+                ),
+            position = ggplot2::position_nudge(y = 0.01),
+            colour = "white",
+            size = 4,
+            inherit.aes = FALSE,
             show.legend = FALSE
             ) +
         ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
         ggplot2::labs(
             x = "Reaction/Movement time (s)",
-            y = "Probability density"
+            y = "Number of trials"
             )
 
 }

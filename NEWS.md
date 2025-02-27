@@ -1,6 +1,7 @@
 # momimi 0.0.1
 
 * Adding a `NEWS.md` file to track changes.
+* Pushing the initial version of `momimi`.
 
 # momimi 0.0.2
 
@@ -43,4 +44,5 @@
 
 * Fixing some typos.
 * Fixing an error related to the presence of a `balance` variable (defined in a previous version of the model).
-* Removed the 3-parameter version of the TMM: now the number of free parameters can simply be adjusted by modifying the `lower_bounds` and `upper_bounds` arguments when using the `fitting()` function.
+* Removed the 3-parameter version of the TMM: from now on, the number of free parameters can simply be adjusted by modifying the `lower_bounds` and `upper_bounds` arguments when using the `fitting()` function.
+* Improving some plotting functions (thanks to suggestions from Xavier Alario)

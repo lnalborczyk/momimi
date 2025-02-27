@@ -21,16 +21,21 @@
 #'
 #' @examples
 #' \dontrun{
-#' # simulating 100 observations
+#' # simulating 500 observations (pairs of RT and MT)
 #' simulated_data <- model(
-#'     nsims = 100, nsamples = 2000,
-#'     exec_threshold = 1, imag_threshold = 0.5,
-#'     peak_time = log(0.5), curvature = 0.4, bw_noise = 0.08,
+#'     nsims = 500,
+#'     exec_threshold = 1,
+#'     peak_time = log(0.5),
+#'     curvature = 0.4,
+#'     bw_noise = 0.08,
 #'     full_output = FALSE
 #'     )
 #'
 #' # displaying the first six observations
 #' head(simulated_data)
+#'
+#' # plotting the distributions of RTs/MTs
+#' plot(simulated_data)
 #' }
 #'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
@@ -39,10 +44,10 @@
 
 model <- function (
         nsims = 100,
-        nsamples = 5000,
+        nsamples = 3000,
         exec_threshold = 1,
         imag_threshold = 0.5,
-        peak_time = 0,
+        peak_time = 0.5,
         curvature = 0.6,
         bw_noise = NULL,
         uncertainty = c("par_level", "func_level", "diffusion"),
@@ -233,12 +238,14 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
                 ) +
             # plotting the motor execution and motor imagery thresholds
             geomtextpath::geom_labelhline(
+                data = x %>% dplyr::slice(1),
                 yintercept = unique(x$exec_threshold),
                 linetype = 2,
                 hjust = 0.9,
                 label = "Motor execution threshold"
                 ) +
             geomtextpath::geom_labelhline(
+                data = x %>% dplyr::slice(1),
                 yintercept = unique(x$imag_threshold),
                 linetype = 2,
                 hjust = 0.9,
@@ -247,19 +254,21 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
             # plotting some individual simulations
             ggplot2::geom_line(
                 data = . %>% dplyr::filter(.data$sim %in% unique(.data$sim)[1:20]),
-                linewidth = 0.5, alpha = 0.2,
-                # colour = "grey",
+                linewidth = 0.5,
+                alpha = 0.25,
+                colour = "grey",
                 show.legend = FALSE
                 ) +
             # plotting average
             ggplot2::stat_summary(
                 ggplot2::aes(group = .data$name, colour = .data$name),
-                fun = "median", geom = "line",
+                fun = "median",
+                geom = "line",
                 colour = "black",
-                linewidth = 1, alpha = 1,
+                linewidth = 1,
+                alpha = 1,
                 show.legend = FALSE
                 ) +
-            # ggplot2::ylim(c(0, 1.5) ) +
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +
             ggplot2::labs(
                 title = "Simulating activation patterns",
@@ -271,37 +280,57 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
 
     } else if (method == "distributions") {
 
+        optimal_bw <- x %>%
+            dplyr::select(.data$sim, .data$onset_imag, .data$mt_imag) %>%
+            dplyr::distinct() %>%
+            tidyr::pivot_longer(cols = c(.data$onset_imag, .data$mt_imag) ) %>%
+            dplyr::pull(.data$value) %>%
+            stats::bw.nrd()
+
         x %>%
+            dplyr::select(.data$sim, .data$onset_imag, .data$mt_imag) %>%
+            dplyr::distinct() %>%
             dplyr::mutate(
-                exec_rt_median = stats::median(.data$onset_exec),
                 imag_rt_median = stats::median(.data$onset_imag),
-                exec_mt_median = stats::median(.data$mt_exec),
                 imag_mt_median = stats::median(.data$mt_imag)
                 ) %>%
             tidyr::pivot_longer(cols = c(.data$onset_imag, .data$mt_imag) ) %>%
             ggplot2::ggplot(
                 ggplot2::aes(
-                    x = .data$value, group = .data$name,
-                    colour = .data$name, fill = .data$name
+                    x = .data$value,
+                    group = .data$name,
+                    colour = .data$name,
+                    fill = .data$name
                     )
                 ) +
-            ggplot2::geom_density(
-                color = "white",
+            ggplot2::geom_histogram(
+                position = "identity",
                 alpha = 0.6,
-                adjust = 5,
-                show.legend = FALSE
+                show.legend = FALSE,
+                colour = "white",
+                binwidth = optimal_bw
                 ) +
             ggplot2::geom_label(
                 data = . %>% dplyr::summarise(m = unique(.data$imag_rt_median) ),
-                ggplot2::aes(x = .data$m, y = 0, label = round(.data$m, 3) ),
+                ggplot2::aes(
+                    x = .data$m, y = 0,
+                    label = round(.data$m, 3)
+                    ),
                 position = ggplot2::position_nudge(y = 0.01),
+                fill = scales::hue_pal()(2)[2],
+                colour = "white",
                 size = 4,
                 inherit.aes = FALSE
                 ) +
             ggplot2::geom_label(
                 data = . %>% dplyr::summarise(m = unique(.data$imag_mt_median) ),
-                ggplot2::aes(x = .data$m, y = 0, label = round(.data$m, 3) ),
+                ggplot2::aes(
+                    x = .data$m, y = 0,
+                    label = round(.data$m, 3)
+                    ),
                 position = ggplot2::position_nudge(y = 0.01),
+                fill = scales::hue_pal()(2)[1],
+                colour = "white",
                 size = 4,
                 inherit.aes = FALSE
                 ) +
@@ -309,7 +338,7 @@ plot.momimi_full <- function (x, method = c("functions", "distributions"), ...) 
             ggplot2::labs(
                 title = "Simulating the implied distributions of RTs and MTs",
                 x = "Reaction/Movement time (s)",
-                y = "Probability density"
+                y = "Number of trials"
                 )
 
     }

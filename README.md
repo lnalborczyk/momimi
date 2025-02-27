@@ -1,3 +1,4 @@
+
 # Models of Motor Inhibition during Motor Imagery
 
 [![GitHub repo
@@ -22,17 +23,21 @@ devtools::install_github(repo = "lnalborczyk/momimi", build_vignettes = TRUE)
 
 ### Simulating and plotting data
 
-We start by simulating some data (here, 100 observations or RTs and MTs)
-given some values for the model’s parameters.
+We start by simulating some data (here, 100 observations or RTs and MTs
+and 3000 samples or timesteps) given some values for the model’s
+parameters.
 
 ``` r
 library(tidyverse)
 library(momimi)
 
 simulated_data <- model(
-    nsims = 100, nsamples = 2000,
-    exec_threshold = 1.1, imag_threshold = 0.55,
-    peak_time = log(0.5), curvature = 0.5,
+    nsims = 200,
+    nsamples = 3000,
+    exec_threshold = 1.1,
+    peak_time = log(0.5),
+    curvature = 0.4,
+    bw_noise = 0.1,
     full_output = TRUE
     )
 ```
@@ -55,7 +60,7 @@ plot(x = simulated_data, method = "distributions")
 
 <img src="man/figures/README-plotting-2.png" width="75%" />
 
-### Fitting the models
+### Fitting the model
 
 We can also use the model to generate realistic data from known
 parameter values and then fit the model to these data to try recovering
@@ -75,18 +80,14 @@ simulated_data <- simulating(
     )
 
 # displaying the first ten rows of these data
-head(x = simulated_data, n = 10)
-#>    reaction_time movement_time action_mode
-#> 1      0.2750805     0.4806944    imagined
-#> 2      0.2963450     0.4955550    imagined
-#> 3      0.2690255     0.5035881    imagined
-#> 4      0.3284638     0.6321461    imagined
-#> 5      0.3523583     0.3937026    imagined
-#> 6      0.2613692     0.3791857    imagined
-#> 7      0.3277495     0.6520622    imagined
-#> 8      0.3158585     0.4149851    imagined
-#> 9      0.3383590     0.3696656    imagined
-#> 10     0.3368878     0.2612512    imagined
+head(simulated_data)
+#>   reaction_time movement_time action_mode
+#> 1     0.3289814     0.3331162    imagined
+#> 2     0.2932046     0.5095558    imagined
+#> 3     0.3768573     0.5414728    imagined
+#> 4     0.2538442     0.6450153    imagined
+#> 5     0.3460399     0.2839331    imagined
+#> 6     0.3454506     0.3613977    imagined
 ```
 
 We fit the model and use realistic constraints (e.g., the RT/MT should
@@ -117,7 +118,7 @@ results <- fitting(
     rt_contraints = range(simulated_data$reaction_time),
     mt_contraints = range(simulated_data$movement_time),
     # maximum number of iteration when fitting the model (to be increased)
-    maxit = 10
+    maxit = 20
     )
 ```
 
@@ -126,10 +127,10 @@ results <- fitting(
 summary(results)
 #> 
 #> ***** summary of DEoptim object ***** 
-#> best member   :  1.15826 0.49017 0.4 0.10122 
-#> best value    :  0.02885 
-#> after         :  10 generations 
-#> fn evaluated  :  3190 times 
+#> best member   :  1.06914 0.49523 0.4 0.1019 
+#> best value    :  0.01546 
+#> after         :  20 generations 
+#> fn evaluated  :  6405 times 
 #> *************************************
 ```
 
@@ -184,7 +185,7 @@ Assessing a novel algorithmic model of motor imagery.
 
 Nalborczyk, L., Longcamp, M., Gajdos, T., Servant, M. & Alario, F.‐X.
 (2024). Towards formal models of inhibitory mechanisms involved in motor
-imagery: A commentary on Bach et al. (2022). Psychological Research,
+imagery: A commentary on Bach et al. (2022). Psychological Research,
 1‐4. <https://doi.org/10.1007/s00426-023-01915-8>. Preprint available at
 <https://psyarxiv.com/tz6x2/>.
 

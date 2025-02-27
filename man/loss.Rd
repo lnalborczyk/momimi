@@ -8,7 +8,7 @@ loss(
   par,
   data,
   nsims = NULL,
-  nsamples = 5000,
+  nsamples = 3000,
   exec_threshold = 1,
   imag_threshold = 0.5,
   uncertainty = c("par_level", "func_level", "diffusion"),

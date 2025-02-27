@@ -69,31 +69,33 @@ Fitting the "threshold modulation model" (TMM) of motor inhibition during motor 
 \examples{
 \dontrun{
 plausible "true" parameter values in the TMM (with 4 free parameters)
-true_pars <- c(1.1, 0.5, 0.3, 1.25)
+true_pars <- c(1.1, 0.5, 0.3, 0.08)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
     nsims = 200,
-    nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined"
     )
 
-# fitting the model
-# to keep a parameter constant, assign the same value to both upper and lower...
+# fitting the model (to keep a parameter constant, assign the same value
+# to both upper and lower...)
 results <- fitting(
     data = simulated_data,
     nsims = 200,
     error_function = "g2",
     method = "DEoptim",
-    lower_bounds = c(0, 0.25, 0.1, 1),
-    upper_bounds = c(2, 1.25, 0.6, 2),
+    lower_bounds = c(1, 0.25, 0.3, 0.01),
+    upper_bounds = c(2, 1.25, 0.3, 0.20),
     initial_pop_constraints = TRUE,
-    maxit = 100
+    maxit = 20
     )
 
 # fitting summary
 summary(results)
+
+# plotting the results
+plot(results, method = "latent")
 }
 
 }

@@ -37,16 +37,19 @@ devtools::install_github(repo = "lnalborczyk/momimi", build_vignettes = TRUE)
 
 ### Simulating and plotting data
 
-We start by simulating some data (here, 100 observations or RTs and MTs) given some values for the model's parameters.
+We start by simulating some data (here, 100 observations or RTs and MTs and 3000 samples or timesteps) given some values for the model's parameters.
 
 ```{r simulating1}
 library(tidyverse)
 library(momimi)
 
 simulated_data <- model(
-    nsims = 100, nsamples = 2000,
-    exec_threshold = 1.1, imag_threshold = 0.55,
-    peak_time = log(0.5), curvature = 0.5,
+    nsims = 200,
+    nsamples = 3000,
+    exec_threshold = 1.1,
+    peak_time = log(0.5),
+    curvature = 0.4,
+    bw_noise = 0.1,
     full_output = TRUE
     )
 ```
@@ -61,7 +64,7 @@ plot(x = simulated_data, method = "functions")
 plot(x = simulated_data, method = "distributions")
 ```
 
-### Fitting the models
+### Fitting the model
 
 We can also use the model to generate realistic data from known parameter values and then fit the model to these data to try recovering the original parameter values.
 
@@ -79,7 +82,7 @@ simulated_data <- simulating(
     )
 
 # displaying the first ten rows of these data
-head(x = simulated_data, n = 10)
+head(simulated_data)
 ```
 
 We fit the model and use realistic constraints (e.g., the RT/MT should be no less than 0.1s and no more than 2 seconds) on the initial parameter values (by setting `initial_pop_constraints = TRUE`) to facilitate convergence (fitting can take a while).
@@ -107,7 +110,7 @@ results <- fitting(
     rt_contraints = range(simulated_data$reaction_time),
     mt_contraints = range(simulated_data$movement_time),
     # maximum number of iteration when fitting the model (to be increased)
-    maxit = 10
+    maxit = 20
     )
 ```
 

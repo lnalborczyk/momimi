@@ -6,7 +6,7 @@
 \usage{
 simulating(
   nsims = 100,
-  nsamples = 5000,
+  nsamples = 3000,
   true_pars = NULL,
   action_mode = c("executed", "imagined"),
   uncertainty = c("par_level", "func_level", "diffusion"),
@@ -35,15 +35,19 @@ Simulating data from the "threshold modulation model" (TMM).
 \examples{
 \dontrun{
 # plausible "true" parameter values in the TMM
-true_pars <- c(1.1, 0.5, 0.3, 1.25)
+# parameters are the motor execution threshold, the peak time,
+# curvature, and between-trial variability
+true_pars <- c(1.2, 0.5, 0.5, 0.06)
 
 # simulating data using these parameter values
 simulated_data <- simulating(
     nsims = 200,
-    nsamples = 2000,
     true_pars = true_pars,
     action_mode = "imagined"
     )
+
+# plotting the simulated data
+plot(simulated_data)
 }
 
 }

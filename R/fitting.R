@@ -24,35 +24,38 @@
 #'
 #' @importFrom magrittr %>%
 #' @importFrom utils head
+#' @importFrom stats density
 #'
 #' @examples
 #' \dontrun{
 #' plausible "true" parameter values in the TMM (with 4 free parameters)
-#' true_pars <- c(1.1, 0.5, 0.3, 1.25)
+#' true_pars <- c(1.1, 0.5, 0.3, 0.08)
 #'
 #' # simulating data using these parameter values
 #' simulated_data <- simulating(
 #'     nsims = 200,
-#'     nsamples = 2000,
 #'     true_pars = true_pars,
 #'     action_mode = "imagined"
 #'     )
 #'
-#' # fitting the model
-#' # to keep a parameter constant, assign the same value to both upper and lower...
+#' # fitting the model (to keep a parameter constant, assign the same value
+#' # to both upper and lower...)
 #' results <- fitting(
 #'     data = simulated_data,
 #'     nsims = 200,
 #'     error_function = "g2",
 #'     method = "DEoptim",
-#'     lower_bounds = c(0, 0.25, 0.1, 1),
-#'     upper_bounds = c(2, 1.25, 0.6, 2),
+#'     lower_bounds = c(1, 0.25, 0.3, 0.01),
+#'     upper_bounds = c(2, 1.25, 0.3, 0.20),
 #'     initial_pop_constraints = TRUE,
-#'     maxit = 100
+#'     maxit = 20
 #'     )
 #'
 #' # fitting summary
 #' summary(results)
+#'
+#' # plotting the results
+#' plot(results, method = "latent")
 #' }
 #'
 #' @author Ladislas Nalborczyk \email{ladislas.nalborczyk@@gmail.com}.
@@ -359,7 +362,7 @@ plot.DEoptim_momimi <- function (
         method = c("ppc", "quantiles", "latent", "optimisation"),
         action_mode = c("executed", "imagined"),
         uncertainty = c("par_level", "func_level", "diffusion"),
-        nsims = 500, nsamples = 5000,
+        nsims = 500, nsamples = 3000,
         max_rt = 5, max_mt = 5,
         ...
         ) {
@@ -375,7 +378,7 @@ plot.DEoptim_momimi <- function (
     if (method == "ppc") {
 
         # simulating data using these parameter values
-        simulating(
+        simulated_data <- simulating(
             nsims = nsims,
             nsamples = nsamples,
             true_pars = estimated_pars,
@@ -385,13 +388,37 @@ plot.DEoptim_momimi <- function (
             # removing NAs or aberrant simulated data
             stats::na.omit() %>%
             dplyr::filter(.data$reaction_time < max_rt & .data$movement_time < max_mt) %>%
-            tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time) %>%
-            ggplot2::ggplot(ggplot2::aes(x = .data$value, colour = .data$name, fill = .data$name) ) +
-            ggplot2::geom_density(
-                data = original_data %>% tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time),
-                color = "white",
+            tidyr::pivot_longer(cols = .data$reaction_time:.data$movement_time)
+
+        # computing the "optimal" bandwidth
+        optimal_bw <- simulated_data %>%
+            dplyr::pull(.data$value) %>%
+            stats::bw.nrd()
+
+
+        # sanity check
+        # cat(optimal_bw)
+
+        # plotting
+        simulated_data %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
+                    x = .data$value,
+                    colour = .data$name,
+                    fill = .data$name
+                    )
+                ) +
+            ggplot2::geom_histogram(
+                data = original_data %>%
+                    tidyr::pivot_longer(
+                        cols = .data$reaction_time:.data$movement_time
+                        ),
+                ggplot2::aes(y = ggplot2::after_stat(density), fill = .data$name),
                 position = "identity",
-                alpha = 0.5, show.legend = FALSE
+                alpha = 0.6,
+                colour = "white",
+                binwidth = optimal_bw,
+                show.legend = FALSE
                 ) +
             ggplot2::geom_density(size = 1, fill = NA, show.legend = FALSE) +
             ggplot2::theme_bw(base_size = 12, base_family = "Open Sans") +

@@ -6,7 +6,7 @@
 \usage{
 generating_initialpop(
   nstudies,
-  nsamples = 5000,
+  nsamples = 3000,
   action_mode,
   par_names,
   lower_bounds,

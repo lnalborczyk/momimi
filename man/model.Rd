@@ -6,10 +6,10 @@
 \usage{
 model(
   nsims = 100,
-  nsamples = 5000,
+  nsamples = 3000,
   exec_threshold = 1,
   imag_threshold = 0.5,
-  peak_time = 0,
+  peak_time = 0.5,
   curvature = 0.6,
   bw_noise = NULL,
   uncertainty = c("par_level", "func_level", "diffusion"),
@@ -46,16 +46,21 @@ Simulating data from the "threshold modulation model" (TMM) of motor imagery.
 }
 \examples{
 \dontrun{
-# simulating 100 observations
+# simulating 500 observations (pairs of RT and MT)
 simulated_data <- model(
-    nsims = 100, nsamples = 2000,
-    exec_threshold = 1, imag_threshold = 0.5,
-    peak_time = log(0.5), curvature = 0.4, bw_noise = 0.08,
+    nsims = 500,
+    exec_threshold = 1,
+    peak_time = log(0.5),
+    curvature = 0.4,
+    bw_noise = 0.08,
     full_output = FALSE
     )
 
 # displaying the first six observations
 head(simulated_data)
+
+# plotting the distributions of RTs/MTs
+plot(simulated_data)
 }
 
 }
